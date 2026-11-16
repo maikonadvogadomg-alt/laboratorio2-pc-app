@@ -1,0 +1,54 @@
+{
+  "name": "laboratorio2-pc",
+  "version": "1.0.0",
+  "description": "Laboratório 2 para PC — dividir, analisar e montar projetos, com o terminal do computador, o Ollama e a voz Francisco",
+  "author": "Maikon",
+  "private": true,
+  "main": "electron/main.cjs",
+  "scripts": {
+    "programa": "electron .",
+    "exe": "electron-builder --win nsis portable --x64 --publish never"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "msedge-tts": ">=1.3.4"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.maikon.laboratorio2.pc.nteste11162324",
+    "productName": "Laboratório 2 (teste 11162324)",
+    "executableName": "Laboratorio2-nteste11162324",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "app/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asar": false,
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "app/ferramentas/meu-chat/icons/icon-512.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Laboratório 2 (teste 11162324)",
+      "artifactName": "Laboratorio2-nteste11162324-Instalar.exe",
+      "include": "electron/instalar.nsh"
+    },
+    "portable": {
+      "artifactName": "Laboratorio2-nteste11162324-sem-instalar.exe"
+    }
+  },
+  "portaDoPrograma": 9825
+}

@@ -1,0 +1,38 @@
+{
+  "titulo": "laboratorio2-pc",
+  "arquivo": "index.html",
+  "itens": [
+    {
+      "path": "app/ferramentas/colador.html",
+      "nome": "Colador de Links",
+      "desc": "",
+      "on": false,
+      "icone": ""
+    },
+    {
+      "path": "app/ferramentas/meu-chat/index.html",
+      "nome": "Meu Chat",
+      "desc": "",
+      "on": false,
+      "icone": "app/ferramentas/meu-chat/icons/icon-192.png"
+    },
+    {
+      "path": "app/index.html",
+      "nome": "🔬 Laboratório 2",
+      "desc": "",
+      "on": true,
+      "icone": "app/icons/icon.svg"
+    },
+    {
+      "path": "electron/navegador.html",
+      "nome": "🌐 Navegador — Mini SK",
+      "desc": "",
+      "on": false,
+      "icone": ""
+    }
+  ],
+  "sub": "",
+  "logo": "",
+  "tema": "dourado",
+  "links": []
+}

@@ -1,0 +1,4128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔬 Laboratório 2</title>
+  <style>/* css/00-casca.css */
+
+    /* ===== RESET & VARIÁVEIS ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-main:       #0d1117;
+      --bg-sidebar:    #161b22;
+      --bg-card:       #1c2128;
+      --bg-hover:      #21262d;
+      --bg-active:     #1f6feb22;
+      --border:        #30363d;
+      --accent:        #1f6feb;
+      --accent-hover:  #388bfd;
+      --accent-green:  #3fb950;
+      --accent-yellow: #d29922;
+      --accent-red:    #f85149;
+      --accent-purple: #bc8cff;
+      --text-primary:  #e6edf3;
+      --text-secondary:#8b949e;
+      --text-muted:    #484f58;
+      --font-main:     'Segoe UI', system-ui, sans-serif;
+      --font-mono:     'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      --radius:        8px;
+      --radius-lg:     12px;
+      --shadow:        0 4px 24px rgba(0,0,0,0.4);
+      --sidebar-width: 240px;
+      --header-height: 52px;
+      --transition:    0.18s ease;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      font-size: 14px;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* ===== LAYOUT PRINCIPAL ===== */
+    #app {
+      display: grid;
+      grid-template-rows: var(--header-height) 1fr;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      grid-template-areas:
+        "header header"
+        "sidebar main";
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ===== HEADER ===== */
+    #header {
+      grid-area: header;
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    #header .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    #header .logo .icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    #header .logo span.sub {
+      color: var(--accent);
+      font-weight: 400;
+      font-size: 12px;
+    }
+
+    #header .spacer { flex: 1; }
+
+    #header .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    #header .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      transition: background var(--transition);
+    }
+    #header .status-dot.green  { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+    #header .status-dot.yellow { background: var(--accent-yellow); }
+    #header .status-dot.red    { background: var(--accent-red); }
+
+    #btn-toggle-sidebar {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); font-size: 18px; padding: 4px 8px;
+      border-radius: var(--radius); transition: all var(--transition);
+    }
+    #btn-toggle-sidebar:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    /* ===== SIDEBAR ===== */
+    #sidebar {
+      grid-area: sidebar;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      transition: width var(--transition), opacity var(--transition);
+    }
+
+    #sidebar.collapsed {
+      width: 0;
+      overflow: hidden;
+      opacity: 0;
+    }
+
+    .sidebar-section {
+      padding: 12px 8px 4px;
+    }
+
+    .sidebar-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      padding: 0 8px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all var(--transition);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--bg-active);
+      color: var(--accent-hover);
+      border-left: 2px solid var(--accent);
+    }
+
+    .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-item .nav-label { flex: 1; }
+
+    .nav-item .nav-badge {
+      font-size: 10px;
+      background: var(--accent);
+      color: white;
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-weight: 600;
+    }
+
+    .nav-item .nav-badge.green  { background: var(--accent-green); }
+    .nav-item .nav-badge.yellow { background: var(--accent-yellow); color: #000; }
+    .nav-item .nav-badge.red    { background: var(--accent-red); }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 12px;
+    }
+
+    /* ===== ÁREA PRINCIPAL ===== */
+    #main {
+      grid-area: main;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== ABAS ===== */
+    #tabs-bar {
+      display: flex;
+      align-items: center;
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      min-height: 38px;
+      padding: 0 4px;
+      gap: 2px;
+    }
+
+    #tabs-bar::-webkit-scrollbar { height: 2px; }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      border: 1px solid transparent;
+      border-bottom: none;
+      transition: all var(--transition);
+      background: none;
+      position: relative;
+    }
+
+    .tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+    .tab.active {
+      background: var(--bg-main);
+      color: var(--text-primary);
+      border-color: var(--border);
+      border-bottom-color: var(--bg-main);
+    }
+
+    .tab .tab-close {
+      font-size: 11px;
+      opacity: 0;
+      transition: opacity var(--transition);
+      cursor: pointer;
+      border-radius: 3px;
+      padding: 1px 3px;
+    }
+    .tab:hover .tab-close { opacity: 0.6; }
+    .tab .tab-close:hover { opacity: 1; background: var(--bg-hover); }
+
+    /* ===== CONTEÚDO DOS MÓDULOS ===== */
+    #modules-container {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .module-panel {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 20px;
+      display: none;
+      animation: fadeIn 0.15s ease;
+    }
+
+    .module-panel.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ===== BOTÕES ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all var(--transition);
+      font-family: var(--font-main);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-secondary {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--border); }
+
+    .btn-success {
+      background: #1a4a1a;
+      color: var(--accent-green);
+      border: 1px solid #2d6a2d;
+    }
+    .btn-success:hover { background: #2d6a2d; }
+
+    .btn-danger {
+      background: #3d1a1a;
+      color: var(--accent-red);
+      border: 1px solid #6d2a2a;
+    }
+    .btn-danger:hover { background: #6d2a2a; }
+
+    /* ===== TOAST NOTIFICATIONS ===== */
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--text-primary);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideIn 0.2s ease, fadeOut 0.3s ease 2.7s forwards;
+      pointer-events: auto;
+      max-width: 320px;
+    }
+
+    .toast.success { border-left: 3px solid var(--accent-green); }
+    .toast.error   { border-left: 3px solid var(--accent-red); }
+    .toast.info    { border-left: 3px solid var(--accent); }
+    .toast.warning { border-left: 3px solid var(--accent-yellow); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to   { opacity: 0; transform: translateX(100%); }
+    }
+
+    /* ===== MODAL ===== */
+    #modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    #modal-overlay.open { display: flex; }
+
+    #modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+    }
+
+    #modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #modal-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); font-size: 18px;
+      border-radius: var(--radius); padding: 2px 6px;
+      transition: all var(--transition);
+    }
+    #modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    /* ===== BARRA DE STATUS INFERIOR ===== */
+    #statusbar {
+      height: 24px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 16px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.9);
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 200;
+    }
+
+    #statusbar .sb-item { display: flex; align-items: center; gap: 4px; }
+    #statusbar .sb-spacer { flex: 1; }
+
+    /* ===== TELA DE BOAS-VINDAS ===== */
+    #welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 24px;
+      text-align: center;
+      padding: 40px;
+    }
+
+    #welcome-screen .welcome-logo {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      box-shadow: 0 0 40px rgba(31,111,235,0.3);
+    }
+
+    #welcome-screen h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent-hover));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #welcome-screen p {
+      color: var(--text-secondary);
+      max-width: 480px;
+      font-size: 14px;
+    }
+
+    .welcome-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .welcome-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-align: left;
+    }
+
+    .welcome-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-active);
+      transform: translateY(-2px);
+    }
+
+    .welcome-card .wc-icon { font-size: 24px; margin-bottom: 8px; }
+    .welcome-card .wc-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .welcome-card .wc-desc  { font-size: 11px; color: var(--text-secondary); }
+
+    /* ===== AUTOSAVE INDICATOR ===== */
+    #autosave-indicator {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color var(--transition);
+    }
+    #autosave-indicator.saving { color: var(--accent-yellow); }
+    #autosave-indicator.saved  { color: var(--accent-green); }
+  
+
+  #modules-container { padding-bottom: 28px; }
+  #main { padding-bottom: 0; }
+
+</style>
+<style>/* css/02-importar.css */
+
+/* ===== IMPORTADOR ===== */
+#drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  background: var(--bg-card);
+  position: relative;
+}
+#drop-zone:hover, #drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--bg-active);
+  transform: scale(1.01);
+}
+#drop-zone .dz-icon { font-size: 48px; margin-bottom: 12px; }
+#drop-zone .dz-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+#drop-zone .dz-sub { color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; }
+#drop-zone .dz-formats {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  justify-content: center; margin-bottom: 20px;
+}
+#drop-zone .dz-formats span {
+  background: var(--bg-hover); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 11px; color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+#drop-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+
+.import-btn-row {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px;
+}
+
+/* ===== PROGRESS ===== */
+#import-progress {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-top: 16px;
+}
+#import-progress.visible { display: block; }
+.progress-bar-wrap {
+  background: var(--bg-hover);
+  border-radius: 4px; height: 8px;
+  overflow: hidden; margin: 10px 0;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-purple));
+  border-radius: 4px;
+  transition: width 0.2s ease;
+  width: 0%;
+}
+#progress-text { font-size: 12px; color: var(--text-secondary); }
+#progress-log {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--bg-main);
+  border-radius: var(--radius);
+  padding: 8px;
+  margin-top: 8px;
+}
+
+/* ===== EXPLORADOR ===== */
+#explorer-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  height: calc(100vh - 140px);
+}
+
+#file-tree-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#file-tree-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#file-tree-search {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+  color: var(--text-primary);
+  font-size: 12px;
+  width: 100%;
+  margin: 8px;
+  width: calc(100% - 16px);
+  font-family: var(--font-main);
+}
+#file-tree-search:focus { outline: none; border-color: var(--accent); }
+
+#file-tree-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+.tree-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.tree-item.active { background: var(--bg-active); color: var(--accent-hover); }
+.tree-item.is-dir { color: var(--accent-yellow); font-weight: 500; }
+.tree-item .tree-icon { flex-shrink: 0; }
+.tree-item .tree-name { overflow: hidden; text-overflow: ellipsis; }
+.tree-item .tree-size {
+  margin-left: auto; font-size: 10px;
+  color: var(--text-muted); flex-shrink: 0;
+}
+
+/* ===== EDITOR DE ARQUIVO ===== */
+#file-viewer-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#file-viewer-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+#file-viewer-path {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-size: 11px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#file-viewer-content {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
+
+#file-viewer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  gap: 12px;
+  font-size: 13px;
+}
+
+#code-display {
+  margin: 0;
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  white-space: pre;
+  overflow: auto;
+  min-height: 100%;
+  tab-size: 2;
+  background: var(--bg-main);
+}
+
+/* Syntax highlight básico */
+.kw  { color: #ff7b72; }
+.str { color: #a5d6ff; }
+.cmt { color: #8b949e; font-style: italic; }
+.num { color: #79c0ff; }
+.fn  { color: #d2a8ff; }
+.tag { color: #7ee787; }
+.atr { color: #79c0ff; }
+
+/* ===== STATS DO PROJETO ===== */
+#project-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-card .stat-val {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.stat-card .stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.stat-card .stat-icon { font-size: 20px; margin-bottom: 4px; }
+
+</style>
+<style>/* css/03-dependencias.css */
+
+/* ===== DEPS MODULE ===== */
+.deps-toolbar {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  align-items: center; margin-bottom: 16px;
+}
+.deps-toolbar .search-input {
+  flex: 1; min-width: 200px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 7px 12px;
+  color: var(--text-primary); font-size: 13px;
+  font-family: var(--font-main);
+}
+.deps-toolbar .search-input:focus { outline: none; border-color: var(--accent); }
+
+.deps-filter-row {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.filter-chip {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-secondary); cursor: pointer;
+  transition: all var(--transition);
+}
+.filter-chip:hover { border-color: var(--accent); color: var(--text-primary); }
+.filter-chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+/* Tabs de package.json */
+.pkg-tabs {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  margin-bottom: 16px; border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.pkg-tab {
+  padding: 5px 12px; border-radius: var(--radius) var(--radius) 0 0;
+  font-size: 12px; cursor: pointer; border: 1px solid transparent;
+  background: none; color: var(--text-secondary);
+  transition: all var(--transition); font-family: var(--font-main);
+}
+.pkg-tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+.pkg-tab.active {
+  background: var(--bg-card); border-color: var(--border);
+  border-bottom-color: var(--bg-main); color: var(--text-primary);
+}
+
+/* Cards de dependência */
+.dep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+.dep-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  transition: all var(--transition); position: relative;
+  overflow: hidden;
+}
+.dep-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.dep-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; border-radius: 3px 0 0 3px;
+}
+.dep-card.relevante::before  { background: var(--accent-green); }
+.dep-card.opcional::before   { background: var(--accent-yellow); }
+.dep-card.substituivel::before { background: var(--accent-purple); }
+.dep-card.dev::before        { background: var(--text-muted); }
+
+.dep-card-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 8px; margin-bottom: 8px;
+}
+.dep-name {
+  font-family: var(--font-mono); font-size: 13px;
+  font-weight: 700; color: var(--text-primary);
+  word-break: break-all;
+}
+.dep-version {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--accent); background: var(--bg-active);
+  padding: 2px 7px; border-radius: 10px; white-space: nowrap;
+  flex-shrink: 0;
+}
+.dep-desc {
+  font-size: 12px; color: var(--text-secondary);
+  margin-bottom: 10px; line-height: 1.5;
+}
+.dep-desc.loading { color: var(--text-muted); font-style: italic; }
+
+.dep-tags {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;
+}
+.dep-tag {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.dep-tag.relevante   { background: #1a3a1a; color: var(--accent-green); }
+.dep-tag.opcional    { background: #3a2a00; color: var(--accent-yellow); }
+.dep-tag.substituivel{ background: #2a1a3a; color: var(--accent-purple); }
+.dep-tag.dev         { background: var(--bg-hover); color: var(--text-muted); }
+.dep-tag.peer        { background: #1a2a3a; color: #79c0ff; }
+.dep-tag.cdn         { background: #1a3a3a; color: #39d0d0; }
+
+.dep-cdn-row {
+  background: var(--bg-main); border-radius: var(--radius);
+  padding: 8px 10px; font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-secondary);
+  margin-top: 6px; cursor: pointer; transition: all var(--transition);
+  border: 1px solid transparent; word-break: break-all;
+}
+.dep-cdn-row:hover { border-color: var(--accent); color: var(--text-primary); }
+
+.dep-actions {
+  display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;
+}
+.dep-actions button {
+  font-size: 11px; padding: 3px 9px;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--bg-hover); color: var(--text-secondary);
+  cursor: pointer; transition: all var(--transition);
+  font-family: var(--font-main);
+}
+.dep-actions button:hover { color: var(--text-primary); border-color: var(--accent); }
+
+/* Painel de resumo */
+.deps-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px; margin-bottom: 16px;
+}
+.deps-sum-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 12px 14px;
+}
+.deps-sum-card .dsv { font-size: 22px; font-weight: 700; }
+.deps-sum-card .dsl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Unificador monorepo */
+.monorepo-banner {
+  background: linear-gradient(135deg, #1a2a1a, #1a1a2a);
+  border: 1px solid var(--accent-green);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  margin-bottom: 16px; display: flex;
+  align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.monorepo-banner .mb-icon { font-size: 24px; }
+.monorepo-banner .mb-text { flex: 1; }
+.monorepo-banner .mb-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.monorepo-banner .mb-sub { font-size: 12px; color: var(--text-secondary); }
+
+/* Loading spinner */
+.dep-spinner {
+  display: inline-block; width: 12px; height: 12px;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Unified package.json viewer */
+#unified-pkg-view {
+  background: var(--bg-main); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px;
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--text-primary); white-space: pre-wrap;
+  max-height: 400px; overflow-y: auto;
+  line-height: 1.7;
+}
+
+</style>
+<style>/* css/04-analisar.css */
+
+/* ===== ANALYZER MODULE ===== */
+.analyzer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+/* Cards de bug */
+.bug-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.bug-card:hover { border-color: var(--accent-red); transform: translateY(-1px); }
+.bug-card::before {
+  content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 3px;
+}
+.bug-card.error::before   { background: var(--accent-red); }
+.bug-card.warning::before { background: var(--accent-yellow); }
+.bug-card.info::before    { background: var(--accent); }
+.bug-card.todo::before    { background: var(--accent-purple); }
+
+.bug-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 8px;
+  margin-bottom: 6px;
+}
+.bug-type {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  padding: 2px 8px; border-radius: 10px;
+}
+.bug-type.error   { background: #3d1a1a; color: var(--accent-red); }
+.bug-type.warning { background: #3a2a00; color: var(--accent-yellow); }
+.bug-type.info    { background: #1a2a3a; color: #79c0ff; }
+.bug-type.todo    { background: #2a1a3a; color: var(--accent-purple); }
+
+.bug-file {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--accent); cursor: pointer;
+  text-decoration: none;
+}
+.bug-file:hover { text-decoration: underline; }
+
+.bug-msg {
+  font-size: 12px; color: var(--text-primary);
+  margin: 6px 0; font-weight: 500;
+}
+.bug-line {
+  font-family: var(--font-mono); font-size: 11px;
+  background: var(--bg-main); border-radius: var(--radius);
+  padding: 6px 10px; color: var(--text-secondary);
+  margin-top: 6px; white-space: pre-wrap;
+  word-break: break-all; border-left: 2px solid var(--border);
+}
+.bug-location {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Cards de rota */
+.route-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  display: flex; align-items: center;
+  gap: 12px; transition: all var(--transition);
+  cursor: pointer;
+}
+.route-card:hover { border-color: var(--accent); transform: translateX(2px); }
+
+.route-method {
+  font-family: var(--font-mono); font-size: 11px;
+  font-weight: 700; padding: 3px 8px;
+  border-radius: var(--radius); min-width: 52px;
+  text-align: center; flex-shrink: 0;
+}
+.route-method.GET    { background: #1a3a1a; color: #3fb950; }
+.route-method.POST   { background: #1a2a3a; color: #79c0ff; }
+.route-method.PUT    { background: #3a2a00; color: #d29922; }
+.route-method.PATCH  { background: #2a1a3a; color: #bc8cff; }
+.route-method.DELETE { background: #3d1a1a; color: #f85149; }
+.route-method.ALL    { background: var(--bg-hover); color: var(--text-secondary); }
+.route-method.USE    { background: var(--bg-hover); color: var(--text-muted); }
+.route-method.WS     { background: #1a3a3a; color: #39d0d0; }
+
+.route-path {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--text-primary); font-weight: 600;
+  flex: 1; word-break: break-all;
+}
+.route-file {
+  font-size: 11px; color: var(--text-muted);
+  font-family: var(--font-mono); flex-shrink: 0;
+}
+.route-framework {
+  font-size: 10px; padding: 2px 7px;
+  border-radius: 10px; background: var(--bg-hover);
+  color: var(--text-muted); flex-shrink: 0;
+}
+
+/* Mapa de estrutura */
+.structure-tree {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--text-secondary); line-height: 1.8;
+  background: var(--bg-main); border-radius: var(--radius-lg);
+  padding: 16px; border: 1px solid var(--border);
+  max-height: 400px; overflow-y: auto;
+}
+.structure-tree .st-dir  { color: var(--accent-yellow); font-weight: 600; }
+.structure-tree .st-file { color: var(--text-secondary); }
+.structure-tree .st-key  { color: var(--accent-green); }
+
+/* Framework badge */
+.fw-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+/* Sumário de análise */
+.analysis-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px; margin-bottom: 20px;
+}
+.as-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 12px 14px;
+  text-align: center; cursor: pointer; transition: all var(--transition);
+}
+.as-card:hover { border-color: var(--accent); }
+.as-card .asv { font-size: 26px; font-weight: 700; margin-bottom: 2px; }
+.as-card .asl { font-size: 11px; color: var(--text-secondary); }
+
+/* Filtros de bug */
+.bug-filters {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+/* Tabs analyzer */
+.analyzer-tabs {
+  display: flex; gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.analyzer-tab {
+  padding: 8px 16px; cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); border: none;
+  background: none; border-bottom: 2px solid transparent;
+  transition: all var(--transition); font-family: var(--font-main);
+}
+.analyzer-tab:hover { color: var(--text-primary); }
+.analyzer-tab.active {
+  color: var(--accent-hover);
+  border-bottom-color: var(--accent);
+}
+
+/* Linha de código com número */
+.code-line-ref {
+  display: flex; gap: 8px; align-items: baseline;
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 4px 8px; border-radius: 4px;
+  background: var(--bg-main); margin-top: 4px;
+}
+.code-line-num {
+  color: var(--text-muted); min-width: 28px;
+  text-align: right; flex-shrink: 0;
+}
+.code-line-content { color: var(--text-secondary); word-break: break-all; }
+
+/* Painel de rotas separado */
+.routes-list {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.routes-group-title {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.7px;
+  color: var(--text-muted); padding: 8px 0 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+</style>
+<style>/* css/05-plano.css */
+
+/* ===== PLANNER MODULE ===== */
+.planner-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  min-height: calc(100vh - 160px);
+}
+
+/* Painel lateral de opções */
+.planner-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.planner-option-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+}
+
+.planner-option-card .poc-title {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--text-muted); margin-bottom: 10px;
+}
+
+.planner-toggle {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; color: var(--text-secondary);
+  cursor: pointer;
+}
+.planner-toggle:last-child { border-bottom: none; }
+.planner-toggle:hover { color: var(--text-primary); }
+
+/* Toggle switch */
+.toggle-sw {
+  width: 32px; height: 18px;
+  background: var(--bg-hover);
+  border-radius: 9px; position: relative;
+  transition: background var(--transition);
+  flex-shrink: 0; cursor: pointer;
+  border: 1px solid var(--border);
+}
+.toggle-sw::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  top: 2px; left: 2px;
+  transition: all var(--transition);
+}
+.toggle-sw.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.toggle-sw.on::after {
+  background: white;
+  left: 16px;
+}
+
+/* Área do plano gerado */
+.planner-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Tabs do plano */
+.plan-type-tabs {
+  display: flex; gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+}
+.plan-type-tab {
+  flex: 1; padding: 8px 12px;
+  border-radius: var(--radius);
+  border: none; background: none;
+  color: var(--text-secondary);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all var(--transition);
+  font-family: var(--font-main);
+  text-align: center;
+}
+.plan-type-tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+.plan-type-tab.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* Seções do plano */
+.plan-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.plan-section-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.plan-section-header:hover { background: var(--bg-hover); }
+.plan-section-title {
+  font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+.plan-section-actions {
+  display: flex; gap: 6px;
+}
+.plan-section-body {
+  padding: 16px;
+}
+
+/* Editor de markdown */
+.md-editor {
+  width: 100%;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 12px;
+  resize: vertical;
+  min-height: 200px;
+  transition: border-color var(--transition);
+}
+.md-editor:focus { outline: none; border-color: var(--accent); }
+
+/* Preview markdown */
+.md-preview {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  max-height: 500px;
+  overflow-y: auto;
+}
+.md-preview h1 { font-size: 20px; font-weight: 700; margin: 0 0 12px; color: var(--accent-hover); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.md-preview h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; color: var(--text-primary); }
+.md-preview h3 { font-size: 14px; font-weight: 600; margin: 12px 0 6px; color: var(--accent); }
+.md-preview h4 { font-size: 13px; font-weight: 600; margin: 10px 0 4px; color: var(--text-secondary); }
+.md-preview p  { margin: 0 0 8px; }
+.md-preview ul, .md-preview ol { margin: 0 0 8px; padding-left: 20px; }
+.md-preview li { margin-bottom: 3px; }
+.md-preview code { background: var(--bg-hover); border-radius: 3px; padding: 1px 5px; font-family: var(--font-mono); font-size: 11px; color: var(--accent-purple); }
+.md-preview pre { background: var(--bg-hover); border-radius: var(--radius); padding: 12px; overflow-x: auto; margin: 8px 0; }
+.md-preview pre code { background: none; padding: 0; }
+.md-preview blockquote { border-left: 3px solid var(--accent); padding-left: 12px; color: var(--text-secondary); margin: 8px 0; }
+.md-preview table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12px; }
+.md-preview th { background: var(--bg-hover); padding: 6px 10px; text-align: left; border: 1px solid var(--border); }
+.md-preview td { padding: 5px 10px; border: 1px solid var(--border); }
+.md-preview strong { color: var(--text-primary); font-weight: 700; }
+.md-preview hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+.md-preview a { color: var(--accent); }
+
+/* Módulos do plano modular */
+.module-plan-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.module-plan-header {
+  display: flex; align-items: center;
+  gap: 10px; padding: 12px 16px;
+  background: var(--bg-hover);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.module-plan-num {
+  width: 26px; height: 26px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+.module-plan-title { font-size: 14px; font-weight: 600; flex: 1; }
+.module-plan-body  { padding: 14px 16px; }
+
+/* Barra de progresso de geração */
+.gen-progress {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: none;
+}
+.gen-progress.visible { display: block; }
+
+/* Partes exportáveis */
+.export-parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.export-part-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.export-part-card .epc-title {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-primary);
+}
+.export-part-card .epc-size {
+  font-size: 11px; color: var(--text-muted);
+}
+.export-part-card .epc-actions {
+  display: flex; gap: 6px;
+}
+
+</style>
+<style>/* css/06-scripts.css */
+
+/* ===== SCRIPTS MODULE ===== */
+.scripts-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+  min-height: calc(100vh - 160px);
+}
+
+.scripts-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Opções de geração */
+.script-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.script-option:last-child { border-bottom: none; }
+.script-option:hover { color: var(--text-primary); }
+.script-option .so-label { display: flex; align-items: center; gap: 6px; }
+
+/* Tabs de tipo de script */
+.script-type-tabs {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.script-type-tab {
+  flex: 1; padding: 7px 10px;
+  border-radius: var(--radius);
+  border: none; background: none;
+  color: var(--text-secondary);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+.script-type-tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+.script-type-tab.active { background: var(--accent); color: white; }
+
+/* Área do script */
+.script-display-area {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.script-display-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.script-display-header .sdh-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.script-display-header .sdh-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.script-code {
+  flex: 1;
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  overflow: auto;
+  white-space: pre;
+  min-height: 400px;
+  background: var(--bg-main);
+}
+
+/* Syntax highlight para scripts */
+.sc-comment { color: #8b949e; font-style: italic; }
+.sc-cmd     { color: #79c0ff; }
+.sc-path    { color: #a5d6ff; }
+.sc-string  { color: #a5d6ff; }
+.sc-keyword { color: #ff7b72; }
+.sc-echo    { color: #3fb950; }
+.sc-var     { color: #bc8cff; }
+
+/* Cards de seção do script */
+.script-section-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.script-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background var(--transition);
+  border-bottom: 1px solid transparent;
+}
+.script-section-header:hover { background: var(--bg-hover); }
+.script-section-header.open  { border-bottom-color: var(--border); }
+.script-section-body {
+  padding: 12px 14px;
+  display: none;
+}
+.script-section-body.open { display: block; }
+
+/* Linha de script com número */
+.script-line {
+  display: flex;
+  gap: 12px;
+  padding: 2px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.script-line-num {
+  color: var(--text-muted);
+  min-width: 30px;
+  text-align: right;
+  user-select: none;
+  flex-shrink: 0;
+}
+.script-line-content { color: var(--text-secondary); }
+
+/* Preview de estrutura de pastas */
+.folder-preview {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.8;
+  max-height: 300px;
+  overflow-y: auto;
+  color: var(--text-secondary);
+}
+.folder-preview .fp-dir  { color: var(--accent-yellow); }
+.folder-preview .fp-file { color: var(--text-secondary); }
+.folder-preview .fp-key  { color: var(--accent-green); }
+
+/* Stats do script */
+.script-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.script-stats span { display: flex; align-items: center; gap: 4px; }
+
+/* Checkbox de opções */
+.opt-checkbox {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  font-size: 10px;
+}
+.opt-checkbox.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+</style>
+<style>/* css/07-terminal.css */
+
+/* ===== TERMINAL MODULE ===== */
+.terminal-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+  height: calc(100vh - 160px);
+  min-height: 500px;
+}
+
+/* Janela do terminal */
+.terminal-window {
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 400px;
+}
+
+/* Barra de título estilo macOS */
+.terminal-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  flex-shrink: 0;
+}
+.terminal-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%; flex-shrink: 0;
+}
+.terminal-dot.red    { background: #ff5f57; }
+.terminal-dot.yellow { background: #febc2e; }
+.terminal-dot.green  { background: #28c840; }
+.terminal-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #8b949e;
+  margin-left: 6px;
+  flex: 1;
+}
+.terminal-titlebar-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Área de output */
+.terminal-output {
+  flex: 1;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c9d1d9;
+  overflow-y: auto;
+  overflow-x: hidden;
+  word-break: break-word;
+  background: #0d1117;
+  min-height: 300px;
+  max-height: calc(100vh - 340px);
+}
+
+/* Tipos de linha no terminal */
+.t-line          { display: flex; gap: 8px; align-items: flex-start; padding: 1px 0; }
+.t-prompt        { color: #3fb950; flex-shrink: 0; user-select: none; }
+.t-cmd           { color: #e6edf3; }
+.t-out           { color: #c9d1d9; }
+.t-err           { color: #f85149; }
+.t-warn          { color: #d29922; }
+.t-success       { color: #3fb950; }
+.t-info          { color: #79c0ff; }
+.t-dim           { color: #484f58; }
+.t-highlight     { color: #bc8cff; }
+.t-path          { color: #a5d6ff; }
+.t-npm           { color: #cb3837; }
+.t-separator {
+  border: none;
+  border-top: 1px solid #21262d;
+  margin: 6px 0;
+}
+
+/* Cursor piscando */
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+.t-cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: #3fb950;
+  animation: blink 1s infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+/* Barra de input */
+.terminal-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+  flex-shrink: 0;
+}
+.terminal-input-prompt {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #3fb950;
+  flex-shrink: 0;
+  user-select: none;
+}
+.terminal-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #e6edf3;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  caret-color: #3fb950;
+}
+.terminal-input::placeholder { color: #484f58; }
+
+/* Sidebar do terminal */
+.terminal-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+/* Buscador de pacotes NPM */
+.npm-search-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.npm-search-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.npm-search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.npm-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-main);
+}
+.npm-search-input::placeholder { color: var(--text-muted); }
+
+.npm-result {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.npm-result:last-child { border-bottom: none; }
+.npm-result:hover { background: var(--bg-hover); }
+.npm-result-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 3px;
+}
+.npm-result-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.npm-result-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.npm-result-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* Comandos rápidos */
+.quick-cmd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition);
+  font-size: 12px;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+.quick-cmd:hover {
+  background: var(--bg-hover);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+.quick-cmd .qc-icon { font-size: 14px; flex-shrink: 0; }
+.quick-cmd .qc-label { flex: 1; }
+.quick-cmd .qc-code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Status do ambiente */
+.env-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.env-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.env-dot.online  { background: #3fb950; box-shadow: 0 0 6px #3fb950; }
+.env-dot.offline { background: #f85149; }
+.env-dot.loading {
+  background: #d29922;
+  animation: blink 0.8s infinite;
+}
+
+/* Histórico de comandos */
+.cmd-history-item {
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: background var(--transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmd-history-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Spinner no terminal */
+.t-spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid #30363d;
+  border-top-color: #3fb950;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+/* Badge de versão */
+.version-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+</style>
+<style>/* css/08-exportar.css */
+
+/* ===== EXPORTADOR MODULE ===== */
+.exporter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+/* Card de exportação */
+.export-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.export-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.export-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.export-card.green::before  { background: var(--accent-green); }
+.export-card.blue::before   { background: var(--accent); }
+.export-card.purple::before { background: var(--accent-purple); }
+.export-card.yellow::before { background: var(--accent-yellow); }
+.export-card.red::before    { background: var(--accent-red); }
+.export-card.teal::before   { background: #39d0d0; }
+
+.export-card-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+.export-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.export-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  flex: 1;
+}
+.export-card-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.export-meta-tag {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.export-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Progresso de exportação */
+.export-progress-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: none;
+  margin-bottom: 16px;
+}
+.export-progress-wrap.visible { display: block; }
+.export-progress-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Lista de arquivos a exportar */
+.export-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.export-file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  transition: background var(--transition);
+}
+.export-file-item:hover { background: var(--bg-hover); }
+.export-file-item .efi-icon { font-size: 14px; flex-shrink: 0; }
+.export-file-item .efi-name {
+  flex: 1;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+.export-file-item .efi-size {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.export-file-item .efi-status {
+  font-size: 11px;
+  width: 16px;
+  text-align: center;
+}
+
+/* Resumo da sessão */
+.session-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.session-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  text-align: center;
+}
+.session-card .sc-val {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+.session-card .sc-lbl {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Opções de exportação ZIP */
+.zip-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.zip-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.zip-option:hover { color: var(--text-primary); }
+
+/* Histórico de exportações */
+.export-history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  margin-bottom: 6px;
+}
+.ehi-icon  { font-size: 18px; flex-shrink: 0; }
+.ehi-name  { flex: 1; font-family: var(--font-mono); color: var(--text-secondary); }
+.ehi-size  { color: var(--text-muted); font-size: 11px; }
+.ehi-time  { color: var(--text-muted); font-size: 11px; }
+
+</style>
+<style>/* css/09-integracao.css */
+
+/* ===== INTEGRAÇÃO FINAL ===== */
+
+/* Notificações toast melhoradas */
+.toast-stack {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  z-index: 9999;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 260px;
+  max-width: 380px;
+  pointer-events: all;
+  animation: toastIn 0.25s ease;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+@keyframes toastIn {
+  from { opacity:0; transform:translateX(20px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+@keyframes toastOut {
+  from { opacity:1; transform:translateX(0); }
+  to   { opacity:0; transform:translateX(20px); }
+}
+.toast.out { animation: toastOut 0.2s ease forwards; }
+.toast.success { background:#0d2818; border-color:#3fb950; color:#3fb950; }
+.toast.error   { background:#2d0f0f; border-color:#f85149; color:#f85149; }
+.toast.warning { background:#2d1f00; border-color:#d29922; color:#d29922; }
+.toast.info    { background:#0d1f2d; border-color:#79c0ff; color:#79c0ff; }
+.toast-icon    { font-size:16px; flex-shrink:0; }
+.toast-msg     { flex:1; line-height:1.4; }
+.toast-close   {
+  cursor:pointer; opacity:0.6; font-size:16px;
+  flex-shrink:0; padding:0 2px;
+  transition:opacity var(--transition);
+}
+.toast-close:hover { opacity:1; }
+
+/* Barra de status global */
+.status-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 24px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  z-index: 100;
+  font-family: var(--font-mono);
+}
+.status-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.status-bar-sep {
+  width: 1px; height: 14px;
+  background: var(--border);
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+}
+
+/* Atalhos de teclado */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* Painel de boas-vindas melhorado */
+.welcome-flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.flow-step {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+.flow-step:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.flow-step.done {
+  border-color: var(--accent-green);
+  background: #0d2818;
+}
+.flow-step.active {
+  border-color: var(--accent);
+  background: #0d1f2d;
+}
+.flow-step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+  transition: all var(--transition);
+}
+.flow-step.done  .flow-step-num { background:#0d2818; border-color:var(--accent-green); color:var(--accent-green); }
+.flow-step.active .flow-step-num { background:#0d1f2d; border-color:var(--accent); color:var(--accent); }
+.flow-step-icon  { font-size: 28px; }
+.flow-step-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.flow-step-desc  { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+.flow-step-badge {
+  position: absolute;
+  top: -6px; right: -6px;
+  background: var(--accent-green);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+}
+
+/* Indicador de fluxo */
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 18px;
+  padding: 0 4px;
+}
+
+/* Painel de ajuda */
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.help-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+}
+.help-card-title {
+  font-size: 13px; font-weight: 700;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.help-card-list {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.help-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-secondary);
+  padding: 3px 0;
+}
+.help-item-key {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  min-width: 80px;
+}
+
+/* Overlay de carregamento inicial */
+.app-loader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  transition: opacity 0.4s ease;
+}
+.app-loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.app-loader-logo {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
+.app-loader-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.app-loader-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+.app-loader-bar {
+  width: 200px;
+  height: 3px;
+  background: var(--bg-hover);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.app-loader-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: loadFill 1.2s ease forwards;
+}
+@keyframes loadFill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* Badges nos botões de navegação */
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--accent-red);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* Drag-and-drop melhorado */
+.drop-zone-active {
+  border-color: var(--accent) !important;
+  background: rgba(31,111,235,0.08) !important;
+}
+.drop-zone-active * { pointer-events: none; }
+
+/* Responsivo mobile */
+@media (max-width: 768px) {
+  .terminal-layout  { grid-template-columns: 1fr; }
+  .planner-layout   { grid-template-columns: 1fr; }
+  .scripts-layout   { grid-template-columns: 1fr; }
+  .analyzer-grid    { grid-template-columns: 1fr; }
+  .exporter-grid    { grid-template-columns: 1fr; }
+  .welcome-flow     { grid-template-columns: 1fr 1fr; }
+  .nav-label        { display: none; }
+  .sidebar          { width: 52px; }
+}
+
+</style>
+<style>/* css/10-celular.css */
+/* 10-celular.css — feito na montagem: o ProjetoLens no celular.
+   A barra lateral sai do caminho e abre pelo ☰ (por cima da tela). */
+#app.sem-menu { grid-template-columns: 0 1fr; }
+@media (max-width: 760px) {
+  #app { grid-template-columns: 1fr !important; grid-template-areas: "header" "main" !important; }
+  #sidebar { position: fixed; top: var(--header-height); bottom: 24px; left: 0; width: min(78vw, 280px); z-index: 50;
+             transform: translateX(-102%); transition: transform .2s ease; box-shadow: 4px 0 24px rgba(0,0,0,.45); }
+  body.menu-aberto #sidebar { transform: none; }
+  body.menu-aberto::after { content: ''; position: fixed; inset: var(--header-height) 0 24px 0; background: rgba(0,0,0,.45); z-index: 40; }
+  #btn-toggle-sidebar { font-size: 24px; padding: 6px 10px; min-width: 44px; min-height: 44px; }
+  .welcome-grid { grid-template-columns: 1fr !important; }
+  #statusbar { overflow-x: auto; white-space: nowrap; gap: 10px; }
+  #statusbar .sb-item { flex: none; }
+  .module-panel { padding: 12px !important; }
+  #sidebar .nav-label, #sidebar .sidebar-section-title { display: block !important; }
+  #sidebar .nav-item { display: flex !important; justify-content: flex-start !important; gap: 10px; min-height: 46px; }
+  input, select, textarea { font-size: 16px; } /* o celular não dá zoom sozinho ao tocar */
+}
+
+</style>
+<style>/* css/11-lab.css */
+/* 11-lab.css — visual das telas do Laboratório (Mapa, Prévia) */
+.lab-topo h2 { margin: 0 0 4px; font-size: 22px; }
+.lab-mut { color: var(--text-secondary); }
+.lab-aviso { background: var(--bg-card); border-left: 4px solid var(--accent-yellow, #d29922); padding: 10px 12px; border-radius: 8px; }
+.lab-linha { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; align-items: center; }
+.lab-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 12px 0; }
+.lab-num { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
+.lab-num b { display: block; font-size: 24px; } .lab-num span { font-size: 13px; color: var(--text-secondary); }
+.lab-num.ruim b { color: var(--accent-red); }
+.lab-h3 { font-size: 16px; margin: 16px 0 6px; overflow-wrap: anywhere; }
+.lab-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.lab-chip { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 99px; padding: 8px 12px; min-height: 40px; cursor: pointer; font: inherit; font-size: 14px; }
+.lab-chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.lab-chip small { opacity: .7; }
+.lab-mini { background: transparent; color: var(--accent); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; cursor: pointer; font-size: 12px; }
+.lab-grade { display: grid; grid-template-columns: minmax(220px, 1fr) 2fr; gap: 12px; margin-top: 12px; }
+.lab-coluna { min-width: 0; }
+.lab-busca { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font: inherit; }
+.lab-lista { display: flex; flex-direction: column; gap: 3px; max-height: 60vh; overflow-y: auto; margin-top: 8px; }
+.lab-item { display: flex; justify-content: space-between; gap: 8px; text-align: left; background: var(--bg-card); color: var(--text-primary); border: 1px solid transparent; border-radius: 8px; padding: 8px 10px; cursor: pointer; font: inherit; font-size: 13px; overflow-wrap: anywhere; }
+.lab-item.on { border-color: var(--accent); }
+.lab-item small { color: var(--text-secondary); flex: none; }
+.lab-ul { margin: 4px 0 10px; padding-left: 18px; } .lab-ul li { margin: 3px 0; overflow-wrap: anywhere; }
+.lab-ul a { color: var(--accent); }
+.lab-pre { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px; overflow: auto; font-size: 12px; white-space: pre; max-height: 40vh; }
+.lab-det { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; margin: 10px 0; }
+.lab-det summary { cursor: pointer; font-weight: 600; }
+.lab-op { display: inline-flex; gap: 6px; align-items: center; margin-right: 10px; } .lab-op input { width: 20px; height: 20px; }
+.lab-area { width: 100%; min-height: 140px; font: 13px/1.4 monospace; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-primary, #0d1117); color: var(--text-primary); margin: 8px 0; }
+.lab-moldura { margin: 10px auto; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; }
+.lab-moldura.cel { max-width: 400px; } .lab-moldura.largo { max-width: 100%; }
+.lab-moldura iframe { width: 100%; height: 70vh; border: 0; display: block; background: #fff; }
+.lab-console { background: #0b0e14; color: #c9d1d9; font: 12px/1.5 monospace; border-radius: 8px; padding: 8px 10px; max-height: 30vh; overflow: auto; }
+.lab-console .lc-error { color: #ff7b72; } .lab-console .lc-warn { color: #e3b341; }
+@media (max-width: 760px) { .lab-grade { grid-template-columns: 1fr; } .lab-lista { max-height: 40vh; } }
+
+/* tabelas do terminal (comparar) ficam alinhadas */
+.terminal-output .t-line { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* ⚖️ Comparar */
+.cmp-mais { color: #3fb950; } .cmp-menos { color: #f85149; }
+.lab-ok { color: #3fb950; font-weight: 600; }
+.cmp-bloco { border: 1px solid var(--border); border-radius: 8px; margin: 8px 0; overflow-x: auto; background: #0b0e14; }
+.cmp-onde { font-size: 12px; color: var(--text-secondary); padding: 4px 8px; border-bottom: 1px solid var(--border); }
+.cmp-l { display: flex; font: 12px/1.5 monospace; white-space: pre; min-width: max-content; }
+.cmp-n { width: 3.2em; flex: none; text-align: right; padding-right: 6px; color: #6e7681; user-select: none; }
+.cmp-s { padding-right: 10px; color: #c9d1d9; }
+.cmp-mais.cmp-l, .cmp-l.cmp-mais { background: rgba(46,160,67,.18); } .cmp-l.cmp-mais .cmp-s { color: #7ee787; }
+.cmp-l.cmp-menos { background: rgba(248,81,73,.16); } .cmp-l.cmp-menos .cmp-s { color: #ffa198; }
+
+/* 🧰 Ferramentas */
+.ferr-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 12px 0; }
+.ferr-card { display: flex; flex-direction: column; gap: 4px; text-align: left; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 14px; padding: 14px; cursor: pointer; font: inherit; }
+.ferr-card:hover { border-color: var(--accent); }
+.ferr-card small { color: var(--text-secondary); line-height: 1.4; }
+.ferr-ic { font-size: 26px; }
+.ferr-kits { display: flex; flex-direction: column; gap: 8px; }
+.ferr-kit { display: flex; gap: 10px; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+.ferr-kit > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ferr-barra { position: sticky; top: 0; z-index: 2; background: var(--bg-primary, #0d1117); padding: 4px 0; }
+.ferr-quadro { width: 100%; height: calc(100vh - var(--header-height) - 120px); min-height: 480px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+@media (max-width: 760px) { .ferr-kit { flex-wrap: wrap; } .ferr-quadro { height: calc(100vh - var(--header-height) - 100px); } }
+
+/* 📱 Termux */
+.tx-status { margin: 6px 0; font-weight: 600; } .tx-status.ok { color: var(--accent-green); } .tx-status.erro { color: var(--accent-red); }
+.tx-term { height: 55vh; min-height: 300px; background: #07110d; border-radius: 10px; padding: 6px; overflow: hidden; margin: 8px 0; }
+.tx-pre { height: calc(100% - 56px); margin: 0; overflow: auto; color: #d7f5e3; font: 13px/1.4 monospace; white-space: pre-wrap; }
+.ferr-grupo { margin-top: 18px; }
+
+/* o que está escondido fica escondido (o .btn do ProjetoLens ganhava do "hidden") */
+[hidden] { display: none !important; }
+
+/* 🔪 Desmontar */
+.dm-cores { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin: 8px 0; }
+.dm-cor { display: flex; gap: 10px; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 8px; overflow-wrap: anywhere; }
+.dm-cor input[type=color] { width: 44px; height: 44px; border: 0; background: none; padding: 0; flex: none; cursor: pointer; }
+.lab-det summary small { font-weight: 400; }
+
+</style>
+  <!-- PWA:inicio (gerado pelo Mini SK — pode refazer no painel 📱 PWA) -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00ff00">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="🔬 Laboratório 2">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      addEventListener('load', function () { navigator.serviceWorker.register('service-worker.js').catch(function (e) { console.warn('Service worker:', e); }); });
+    }
+  </script>
+  <!-- PWA:fim -->
+</head>
+<body>
+<div class="app-loader" id="app-loader">
+  <div class="app-loader-logo">🔬</div>
+  <div class="app-loader-title">Laboratório</div>
+  <div class="app-loader-sub">Carregando módulos...</div>
+  <div class="app-loader-bar">
+    <div class="app-loader-fill"></div>
+  </div>
+</div>
+<div class="toast-stack" id="toast-stack"></div>
+<div id="app">
+
+  <!-- ===== HEADER ===== -->
+  <header id="header">
+    <button id="btn-toggle-sidebar" title="Toggle Sidebar">☰</button>
+    <div class="logo">
+      <div class="icon">🔬</div>
+      Laboratório 2
+      <span class="sub">v16/11-A</span>
+    </div>
+    <div class="spacer"></div>
+    <div id="autosave-indicator">
+      <span id="autosave-dot">💾</span>
+      <span id="autosave-text">Pronto</span>
+    </div>
+    <div class="status-bar">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Nenhum projeto carregado</span>
+    </div>
+  </header>
+
+  <!-- ===== SIDEBAR ===== -->
+  <nav id="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Projeto</div>
+      <button class="nav-item active" data-module="welcome" onclick="Shell.navigate('welcome')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Início</span>
+      </button>
+      <button class="nav-item" data-module="importer" onclick="Shell.navigate('importer')">
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Importar Projeto</span>
+        <span class="nav-badge" id="badge-importer" style="display:none">!</span>
+      </button>
+      <button class="nav-item" data-module="explorer" onclick="Shell.navigate('explorer')">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">Explorador</span>
+        <span class="nav-badge green" id="badge-explorer" style="display:none">0</span>
+      </button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Análise</div>
+      <button class="nav-item" data-module="deps" onclick="Shell.navigate('deps')">
+        <span class="nav-icon">🧩</span>
+        <span class="nav-label">Dependências</span>
+        <span class="nav-badge yellow" id="badge-deps" style="display:none">0</span>
+      </button>
+      <button class="nav-item" data-module="analyzer" onclick="Shell.navigate('analyzer')">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Analisador</span>
+        <span class="nav-badge red" id="badge-bugs" style="display:none">0</span>
+      </button>
+      <button class="nav-item" data-module="routes" onclick="Shell.navigate('routes')">
+        <span class="nav-icon">🛣️</span>
+        <span class="nav-label">Rotas de API</span>
+        <span class="nav-badge" id="badge-routes" style="display:none">0</span>
+      </button>
+      <button class="nav-item" data-module="cdn" onclick="Shell.navigate('cdn')">
+        <span class="nav-icon">🌐</span>
+        <span class="nav-label">Alternativas CDN</span>
+      </button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Laboratório</div>
+      <button class="nav-item" data-module="mapa" onclick="Shell.navigate('mapa')">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-label">Mapa de ligações</span>
+      </button>
+      <button class="nav-item" data-module="previa" onclick="Shell.navigate('previa')">
+        <span class="nav-icon">🧪</span>
+        <span class="nav-label">Prévia</span>
+      </button>
+      <button class="nav-item" data-module="desmontar" onclick="Shell.navigate('desmontar')">
+        <span class="nav-icon">🔪</span>
+        <span class="nav-label">Desmontar HTML</span>
+      </button>
+      <button class="nav-item" data-module="comparar" onclick="Shell.navigate('comparar')">
+        <span class="nav-icon">⚖️</span>
+        <span class="nav-label">Comparar A × B</span>
+      </button>
+      <button class="nav-item" data-module="ferramentas" onclick="Shell.navigate('ferramentas')">
+        <span class="nav-icon">🧰</span>
+        <span class="nav-label">Ferramentas</span>
+      </button>
+      <button class="nav-item" data-module="termux" onclick="Shell.navigate('termux')">
+        <span class="nav-icon">💻</span>
+        <span class="nav-label">Terminal de verdade</span>
+        <span class="nav-badge green">celular e PC</span>
+      </button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Geração</div>
+      <button class="nav-item" data-module="planner" onclick="Shell.navigate('planner')">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Plano do Projeto</span>
+      </button>
+      <button class="nav-item" data-module="scripts" onclick="Shell.navigate('scripts')">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Scripts BAT/SH</span>
+      </button>
+      <button class="nav-item" data-module="exporter" onclick="Shell.navigate('exporter')">
+        <span class="nav-icon">💾</span>
+        <span class="nav-label">Exportar</span>
+      </button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Ferramentas</div>
+      <button class="nav-item" data-module="terminal" onclick="Shell.navigate('terminal')">
+        <span class="nav-icon">🧸</span>
+        <span class="nav-label">Terminal de treino</span>
+        <span class="nav-badge yellow">só olha</span>
+      </button>
+    </div>
+
+    <!-- Espaço para info do projeto -->
+    <div style="flex:1"></div>
+    <div style="padding:12px; font-size:11px; color:var(--text-muted); border-top:1px solid var(--border);">
+      <div id="sidebar-project-name" style="font-weight:600; color:var(--text-secondary); margin-bottom:4px;">Sem projeto</div>
+      <div id="sidebar-project-info">Importe um projeto para começar</div>
+    </div>
+  </nav>
+
+  <!-- ===== ÁREA PRINCIPAL ===== -->
+  <main id="main">
+
+    <!-- Barra de abas -->
+    <div id="tabs-bar">
+      <div class="tab active" data-tab="welcome" onclick="Shell.activateTab('welcome')">
+        <span>🏠 Início</span>
+      </div>
+    </div>
+
+    <!-- Container dos módulos -->
+    <div id="modules-container">
+
+      <!-- TELA DE BOAS-VINDAS -->
+      <div class="module-panel active" id="panel-welcome">
+        <div id="welcome-screen">
+          <div class="welcome-logo">🔬</div>
+          <h1>🔬 Laboratório 2</h1><p style="color:var(--accent-green);font-size:13px;margin:4px 0">v16/11-A · 💻 terminal de verdade (celular e PC) · 💬 Meu Chat nas 🧰 Ferramentas</p>
+          <p>Importe seu projeto, analise dependências, detecte bugs, gere planos completos e scripts de recriação — tudo no navegador.</p>
+          <div class="welcome-grid">
+            <div class="welcome-card" onclick="Shell.navigate('importer')">
+              <div class="wc-icon">📦</div>
+              <div class="wc-title">Importar Projeto</div>
+              <div class="wc-desc">ZIP, TAR, TAZ, pasta completa</div>
+            </div>
+            <div class="welcome-card" onclick="Shell.navigate('deps')">
+              <div class="wc-icon">🧩</div>
+              <div class="wc-title">Dependências</div>
+              <div class="wc-desc">NPM, monorepo, CDN alternativas</div>
+            </div>
+            <div class="welcome-card" onclick="Shell.navigate('analyzer')">
+              <div class="wc-icon">🔍</div>
+              <div class="wc-title">Analisar Código</div>
+              <div class="wc-desc">Bugs, rotas, estrutura</div>
+            </div>
+            <div class="welcome-card" onclick="Shell.navigate('planner')">
+              <div class="wc-icon">📋</div>
+              <div class="wc-title">Gerar Plano</div>
+              <div class="wc-desc">MD completo, modular ou monolítico</div>
+            </div>
+            <div class="welcome-card" onclick="Shell.navigate('scripts')">
+              <div class="wc-icon">⚙️</div>
+              <div class="wc-title">Scripts BAT/SH</div>
+              <div class="wc-desc">Recriar estrutura do zero</div>
+            </div>
+            <div class="welcome-card" onclick="Shell.navigate('terminal')">
+              <div class="wc-icon">💻</div>
+              <div class="wc-title">Terminal</div>
+              <div class="wc-desc">Comandos de consulta + busca real no npm</div>
+            </div>
+          </div>
+          <div id="welcome-restore" style="display:none; margin-top:8px;">
+            <button class="btn btn-secondary" onclick="Shell.restoreSession()">
+              🔄 Restaurar sessão anterior
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAINÉIS DOS MÓDULOS (serão preenchidos pelos módulos seguintes) -->
+      <div class="module-panel" id="panel-importer">
+
+  <div style="max-width:800px; margin:0 auto;">
+
+    <div style="margin-bottom:20px;">
+      <h2 style="font-size:20px; font-weight:700; margin-bottom:6px;">📦 Importar Projeto</h2>
+      <p style="color:var(--text-secondary); font-size:13px;">
+        Suporte a ZIP, TAR, TAR.GZ, TAZ, GZ e pasta completa. Sem limite de arquivos ou tamanho.
+      </p>
+    </div>
+
+    <!-- Drop Zone -->
+    <div id="drop-zone">
+      <input type="file" id="file-input-zip"
+             accept=".zip,.tar,.tar.gz,.taz,.gz,.tgz"
+             multiple />
+      <div class="dz-icon">📦</div>
+      <div class="dz-title">Arraste seu projeto aqui</div>
+      <div class="dz-sub">ou clique para selecionar arquivo(s)</div>
+      <div class="dz-formats">
+        <span>.zip</span><span>.tar</span><span>.tar.gz</span>
+        <span>.taz</span><span>.gz</span><span>.tgz</span>
+      </div>
+    </div>
+
+    <!-- Botões alternativos -->
+    <div class="import-btn-row">
+      <button class="btn btn-secondary" onclick="Importer.openFolderPicker()">
+        📁 Importar Pasta Completa
+      </button>
+      <button class="btn btn-secondary" onclick="Importer.openFilePicker()">
+        📄 Selecionar Arquivo(s)
+      </button>
+      <button class="btn btn-secondary" onclick="Importer.pasteJSON()">
+        📋 Colar package.json
+      </button>
+      <button class="btn btn-danger" onclick="Importer.clearProject()" id="btn-clear-project" style="display:none">
+        🗑️ Limpar Projeto
+      </button>
+    </div>
+
+    <!-- Input oculto para pasta -->
+    <input type="file" id="folder-input" webkitdirectory multiple style="display:none" />
+
+    <!-- Progresso -->
+    <div id="import-progress">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+        <span style="font-size:13px; font-weight:600;">⏳ Processando...</span>
+        <span id="progress-percent" style="font-size:12px; color:var(--accent)">0%</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+      <div id="progress-text">Iniciando...</div>
+      <div id="progress-log"></div>
+    </div>
+
+    <!-- Stats após importação -->
+    <div id="import-stats" style="display:none; margin-top:20px;">
+      <div id="project-stats"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="Shell.navigate('explorer')">
+          📁 Ver Arquivos
+        </button>
+        <button class="btn btn-secondary" onclick="Shell.navigate('deps')">
+          🧩 Analisar Dependências
+        </button>
+        <button class="btn btn-secondary" onclick="Shell.navigate('analyzer')">
+          🔍 Analisar Código
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-explorer">
+  <div id="explorer-layout">
+
+    <!-- Árvore de arquivos -->
+    <div id="file-tree-panel">
+      <div id="file-tree-header">
+        <span>📁 Arquivos</span>
+        <span id="tree-count" style="font-size:11px; color:var(--text-muted)">0</span>
+      </div>
+      <input type="text" id="file-tree-search"
+             placeholder="🔍 Filtrar arquivos..."
+             oninput="Importer.filterTree(this.value)" />
+      <div id="file-tree-container">
+        <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">
+          Nenhum projeto importado
+        </div>
+      </div>
+    </div>
+
+    <!-- Visualizador de arquivo -->
+    <div id="file-viewer-panel">
+      <div id="file-viewer-header">
+        <span id="file-viewer-icon">📄</span>
+        <span id="file-viewer-name" style="font-weight:600; font-size:13px;">Nenhum arquivo</span>
+        <span id="file-viewer-path"></span>
+        <button class="btn btn-secondary" id="btn-copy-file"
+                onclick="Importer.copyCurrentFile()"
+                style="display:none; padding:4px 10px; font-size:11px;">
+          📋 Copiar
+        </button>
+        <button class="btn btn-secondary" id="btn-download-file"
+                onclick="Importer.downloadCurrentFile()"
+                style="display:none; padding:4px 10px; font-size:11px;">
+          ⬇️ Baixar
+        </button>
+      </div>
+      <div id="file-viewer-content">
+        <div id="file-viewer-empty">
+          <span style="font-size:48px;">📄</span>
+          <span>Selecione um arquivo na árvore</span>
+        </div>
+        <pre id="code-display" style="display:none"></pre>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-deps">
+  <div style="max-width:1100px; margin:0 auto;">
+
+    <!-- Cabeçalho -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">🧩 Dependências</h2>
+        <p style="color:var(--text-secondary); font-size:13px;">
+          Análise completa de todos os package.json — incluindo monorepo
+        </p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="DepsAnalyzer.analyze()">
+          🔍 Analisar Projeto
+        </button>
+        <button class="btn btn-secondary" onclick="DepsAnalyzer.unifyMonorepo()" id="btn-unify" style="display:none">
+          🔗 Unificar Monorepo
+        </button>
+        <button class="btn btn-secondary" onclick="DepsAnalyzer.exportDeps()">
+          ⬇️ Exportar Lista
+        </button>
+      </div>
+    </div>
+
+    <!-- Banner monorepo (aparece se detectado) -->
+    <div class="monorepo-banner" id="monorepo-banner" style="display:none">
+      <div class="mb-icon">🏗️</div>
+      <div class="mb-text">
+        <div class="mb-title">Monorepo Detectado!</div>
+        <div class="mb-sub" id="monorepo-info">Múltiplos package.json encontrados</div>
+      </div>
+      <button class="btn btn-success" onclick="DepsAnalyzer.unifyMonorepo()">
+        🔗 Unificar em um só
+      </button>
+    </div>
+
+    <!-- Resumo -->
+    <div class="deps-summary" id="deps-summary" style="display:none">
+      <div class="deps-sum-card">
+        <div class="dsv" id="ds-total" style="color:var(--accent)">0</div>
+        <div class="dsl">Total de deps</div>
+      </div>
+      <div class="deps-sum-card">
+        <div class="dsv" id="ds-prod" style="color:var(--accent-green)">0</div>
+        <div class="dsl">Produção</div>
+      </div>
+      <div class="deps-sum-card">
+        <div class="dsv" id="ds-dev" style="color:var(--text-muted)">0</div>
+        <div class="dsl">Dev</div>
+      </div>
+      <div class="deps-sum-card">
+        <div class="dsv" id="ds-cdn" style="color:#39d0d0">0</div>
+        <div class="dsl">Com CDN</div>
+      </div>
+      <div class="deps-sum-card">
+        <div class="dsv" id="ds-pkg" style="color:var(--accent-yellow)">0</div>
+        <div class="dsl">package.json</div>
+      </div>
+    </div>
+
+    <!-- Tabs de package.json -->
+    <div class="pkg-tabs" id="pkg-tabs" style="display:none"></div>
+
+    <!-- Toolbar de busca e filtros -->
+    <div class="deps-toolbar" id="deps-toolbar" style="display:none">
+      <input type="text" class="search-input"
+             placeholder="🔍 Buscar dependência..."
+             oninput="DepsAnalyzer.filterDeps(this.value)"
+             id="deps-search" />
+      <button class="btn btn-secondary" onclick="DepsAnalyzer.fetchAllDescriptions()" id="btn-fetch-all">
+        🌐 Buscar Descrições NPM
+      </button>
+    </div>
+
+    <div class="deps-filter-row" id="deps-filter-row" style="display:none">
+      <div class="filter-chip active" data-filter="all"    onclick="DepsAnalyzer.setFilter('all',this)">Todos</div>
+      <div class="filter-chip"        data-filter="prod"   onclick="DepsAnalyzer.setFilter('prod',this)">Produção</div>
+      <div class="filter-chip"        data-filter="dev"    onclick="DepsAnalyzer.setFilter('dev',this)">Dev</div>
+      <div class="filter-chip"        data-filter="relevante"   onclick="DepsAnalyzer.setFilter('relevante',this)">✅ Relevante</div>
+      <div class="filter-chip"        data-filter="opcional"    onclick="DepsAnalyzer.setFilter('opcional',this)">⚠️ Opcional</div>
+      <div class="filter-chip"        data-filter="substituivel" onclick="DepsAnalyzer.setFilter('substituivel',this)">🔄 Substituível</div>
+      <div class="filter-chip"        data-filter="cdn"    onclick="DepsAnalyzer.setFilter('cdn',this)">🌐 Tem CDN</div>
+    </div>
+
+    <!-- Estado vazio -->
+    <div id="deps-empty" style="text-align:center; padding:60px 20px; color:var(--text-muted);">
+      <div style="font-size:48px; margin-bottom:12px;">🧩</div>
+      <div style="font-size:15px; margin-bottom:8px;">Nenhuma dependência analisada</div>
+      <div style="font-size:13px; margin-bottom:20px;">Importe um projeto e clique em "Analisar Projeto"</div>
+      <button class="btn btn-primary" onclick="DepsAnalyzer.analyze()">
+        🔍 Analisar Agora
+      </button>
+    </div>
+
+    <!-- Grid de dependências -->
+    <div class="dep-grid" id="dep-grid"></div>
+
+    <!-- Progresso de busca NPM -->
+    <div id="deps-fetch-progress" style="display:none; margin-top:16px;">
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <div class="dep-spinner"></div>
+          <span style="font-size:13px;" id="deps-fetch-text">Buscando informações no NPM...</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="deps-fetch-bar"></div>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:6px;" id="deps-fetch-sub"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-analyzer">
+  <div style="max-width:1100px; margin:0 auto;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">🔍 Analisador de Código</h2>
+        <p style="color:var(--text-secondary); font-size:13px;">
+          Detecta frameworks, bugs, padrões problemáticos e estrutura do projeto
+        </p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="CodeAnalyzer.analyze()">
+          🔍 Analisar Projeto
+        </button>
+        <button class="btn btn-secondary" onclick="CodeAnalyzer.exportReport()">
+          ⬇️ Exportar Relatório
+        </button>
+      </div>
+    </div>
+
+    <!-- Frameworks detectados -->
+    <div id="fw-section" style="display:none; margin-bottom:20px;">
+      <div class="card">
+        <div class="card-title">🏗️ Frameworks e Tecnologias Detectadas</div>
+        <div id="fw-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="analysis-summary" id="analysis-summary" style="display:none">
+      <div class="as-card" onclick="CodeAnalyzer.setTab('bugs')">
+        <div class="asv" id="as-errors" style="color:var(--accent-red)">0</div>
+        <div class="asl">Erros</div>
+      </div>
+      <div class="as-card" onclick="CodeAnalyzer.setTab('bugs')">
+        <div class="asv" id="as-warnings" style="color:var(--accent-yellow)">0</div>
+        <div class="asl">Avisos</div>
+      </div>
+      <div class="as-card" onclick="CodeAnalyzer.setTab('bugs')">
+        <div class="asv" id="as-todos" style="color:var(--accent-purple)">0</div>
+        <div class="asl">TODOs</div>
+      </div>
+      <div class="as-card" onclick="CodeAnalyzer.setTab('routes')">
+        <div class="asv" id="as-routes" style="color:var(--accent-green)">0</div>
+        <div class="asl">Rotas API</div>
+      </div>
+      <div class="as-card" onclick="CodeAnalyzer.setTab('structure')">
+        <div class="asv" id="as-files" style="color:var(--accent)">0</div>
+        <div class="asl">Arquivos</div>
+      </div>
+      <div class="as-card" onclick="CodeAnalyzer.setTab('structure')">
+        <div class="asv" id="as-lines" style="color:#39d0d0">0</div>
+        <div class="asl">Linhas de código</div>
+      </div>
+    </div>
+
+    <!-- Estado vazio -->
+    <div id="analyzer-empty" style="text-align:center; padding:60px 20px; color:var(--text-muted);">
+      <div style="font-size:48px; margin-bottom:12px;">🔍</div>
+      <div style="font-size:15px; margin-bottom:8px;">Nenhuma análise realizada</div>
+      <div style="font-size:13px; margin-bottom:20px;">Importe um projeto e clique em "Analisar Projeto"</div>
+      <button class="btn btn-primary" onclick="CodeAnalyzer.analyze()">🔍 Analisar Agora</button>
+    </div>
+
+    <!-- Conteúdo da análise -->
+    <div id="analyzer-content" style="display:none;">
+
+      <!-- Tabs -->
+      <div class="analyzer-tabs">
+        <button class="analyzer-tab active" data-tab="bugs"      onclick="CodeAnalyzer.setTab('bugs',this)">
+          🐛 Bugs e Avisos <span id="tab-bugs-count"></span>
+        </button>
+        <button class="analyzer-tab"        data-tab="routes"    onclick="CodeAnalyzer.setTab('routes',this)">
+          🛣️ Rotas API <span id="tab-routes-count"></span>
+        </button>
+        <button class="analyzer-tab"        data-tab="structure" onclick="CodeAnalyzer.setTab('structure',this)">
+          🗂️ Estrutura
+        </button>
+        <button class="analyzer-tab"        data-tab="console"   onclick="CodeAnalyzer.setTab('console',this)">
+          🖨️ Console.logs <span id="tab-console-count"></span>
+        </button>
+      </div>
+
+      <!-- Tab: Bugs -->
+      <div id="tab-panel-bugs">
+        <div class="bug-filters">
+          <div class="filter-chip active" onclick="CodeAnalyzer.setBugFilter('all',this)">Todos</div>
+          <div class="filter-chip" onclick="CodeAnalyzer.setBugFilter('error',this)">❌ Erros</div>
+          <div class="filter-chip" onclick="CodeAnalyzer.setBugFilter('warning',this)">⚠️ Avisos</div>
+          <div class="filter-chip" onclick="CodeAnalyzer.setBugFilter('todo',this)">📝 TODOs</div>
+          <div class="filter-chip" onclick="CodeAnalyzer.setBugFilter('info',this)">ℹ️ Info</div>
+        </div>
+        <div id="bugs-grid" class="analyzer-grid"></div>
+        <div id="bugs-empty" style="display:none; text-align:center; padding:40px; color:var(--accent-green);">
+          <div style="font-size:36px; margin-bottom:8px;">✅</div>
+          <div>Nenhum problema encontrado nesta categoria!</div>
+        </div>
+      </div>
+
+      <!-- Tab: Rotas (resumo aqui, painel completo em panel-routes) -->
+      <div id="tab-panel-routes" style="display:none;">
+        <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+          <button class="btn btn-secondary" onclick="Shell.navigate('routes')">
+            🛣️ Ver painel completo de rotas
+          </button>
+          <button class="btn btn-secondary" onclick="CodeAnalyzer.copyRoutes()">
+            📋 Copiar todas as rotas
+          </button>
+          <button class="btn btn-secondary" onclick="CodeAnalyzer.exportRoutes()">
+            ⬇️ Exportar em MD
+          </button>
+        </div>
+        <div id="routes-summary-list" class="routes-list"></div>
+      </div>
+
+      <!-- Tab: Estrutura -->
+      <div id="tab-panel-structure" style="display:none;">
+        <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+          <button class="btn btn-secondary" onclick="CodeAnalyzer.copyStructure()">
+            📋 Copiar estrutura
+          </button>
+          <button class="btn btn-secondary" onclick="CodeAnalyzer.exportStructure()">
+            ⬇️ Exportar MD
+          </button>
+        </div>
+        <div id="structure-display" class="structure-tree"></div>
+        <div id="file-types-chart" style="margin-top:16px;"></div>
+      </div>
+
+      <!-- Tab: Console.logs -->
+      <div id="tab-panel-console" style="display:none;">
+        <div style="margin-bottom:12px;">
+          <p style="font-size:13px; color:var(--text-secondary);">
+            Console.logs esquecidos no código — remova antes de ir para produção
+          </p>
+        </div>
+        <div id="console-grid" class="analyzer-grid"></div>
+        <div id="console-empty" style="display:none; text-align:center; padding:40px; color:var(--accent-green);">
+          <div style="font-size:36px; margin-bottom:8px;">✅</div>
+          <div>Nenhum console.log encontrado!</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-routes">
+  <div style="max-width:1000px; margin:0 auto;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">🛣️ Rotas de API</h2>
+        <p style="color:var(--text-secondary); font-size:13px;">
+          Todas as rotas detectadas — Express, Next.js, Fastify, Koa, NestJS e mais
+        </p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="CodeAnalyzer.copyRoutes()">📋 Copiar</button>
+        <button class="btn btn-secondary" onclick="CodeAnalyzer.exportRoutes()">⬇️ Exportar MD</button>
+      </div>
+    </div>
+
+    <!-- Filtros de método -->
+    <div class="bug-filters" id="routes-method-filters">
+      <div class="filter-chip active" onclick="CodeAnalyzer.setRouteFilter('all',this)">Todos</div>
+      <div class="filter-chip" onclick="CodeAnalyzer.setRouteFilter('GET',this)">GET</div>
+      <div class="filter-chip" onclick="CodeAnalyzer.setRouteFilter('POST',this)">POST</div>
+      <div class="filter-chip" onclick="CodeAnalyzer.setRouteFilter('PUT',this)">PUT</div>
+      <div class="filter-chip" onclick="CodeAnalyzer.setRouteFilter('PATCH',this)">PATCH</div>
+      <div class="filter-chip" onclick="CodeAnalyzer.setRouteFilter('DELETE',this)">DELETE</div>
+      <div class="filter-chip" onclick="CodeAnalyzer.setRouteFilter('WS',this)">WebSocket</div>
+    </div>
+
+    <div id="routes-empty" style="text-align:center; padding:60px; color:var(--text-muted);">
+      <div style="font-size:48px; margin-bottom:12px;">🛣️</div>
+      <div style="font-size:15px; margin-bottom:8px;">Nenhuma rota detectada ainda</div>
+      <button class="btn btn-primary" onclick="CodeAnalyzer.analyze()">🔍 Analisar Projeto</button>
+    </div>
+
+    <div id="routes-full-list" class="routes-list" style="display:none;"></div>
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-cdn">
+  <div style="max-width:900px; margin:0 auto;">
+    <div style="margin-bottom:20px;">
+      <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">🌐 Alternativas CDN</h2>
+      <p style="color:var(--text-secondary); font-size:13px;">
+        Tags prontas para usar via jsDelivr e unpkg — sem precisar instalar nada
+      </p>
+    </div>
+
+    <div id="cdn-empty" style="text-align:center; padding:60px 20px; color:var(--text-muted);">
+      <div style="font-size:48px; margin-bottom:12px;">🌐</div>
+      <div style="font-size:15px; margin-bottom:8px;">Nenhuma CDN gerada ainda</div>
+      <div style="font-size:13px; margin-bottom:20px;">Analise as dependências primeiro</div>
+      <button class="btn btn-primary" onclick="Shell.navigate('deps')">
+        🧩 Ir para Dependências
+      </button>
+    </div>
+
+    <div id="cdn-content" style="display:none;">
+      <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="DepsAnalyzer.copyAllCDN()">
+          📋 Copiar Todas as Tags
+        </button>
+        <button class="btn btn-secondary" onclick="DepsAnalyzer.downloadCDNFile()">
+          ⬇️ Baixar como HTML
+        </button>
+      </div>
+      <div id="cdn-grid" class="dep-grid"></div>
+    </div>
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-planner">
+  <div style="max-width:1200px; margin:0 auto;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">📋 Gerador de Plano</h2>
+        <p style="color:var(--text-secondary); font-size:13px;">
+          Plano completo em Markdown — versão monolítica ou modular, copiável e baixável por partes
+        </p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="Planner.generate()">
+          ⚡ Gerar Plano
+        </button>
+        <button class="btn btn-secondary" onclick="Planner.downloadAll()" id="btn-dl-all" style="display:none">
+          ⬇️ Baixar Tudo
+        </button>
+        <button class="btn btn-secondary" onclick="Planner.copyAll()" id="btn-copy-all" style="display:none">
+          📋 Copiar Tudo
+        </button>
+      </div>
+    </div>
+
+    <div class="planner-layout">
+
+      <!-- Sidebar de opções -->
+      <div class="planner-sidebar">
+
+        <div class="planner-option-card">
+          <div class="poc-title">⚙️ Tipo de Plano</div>
+          <div class="plan-type-tabs" style="flex-direction:column; gap:4px; background:none; border:none; padding:0;">
+            <button class="plan-type-tab active" id="ptt-mono"
+                    onclick="Planner.setPlanType('monolitico',this)">
+              🧱 Monolítico
+            </button>
+            <button class="plan-type-tab" id="ptt-mod"
+                    onclick="Planner.setPlanType('modular',this)">
+              🧩 Modular
+            </button>
+            <button class="plan-type-tab" id="ptt-both"
+                    onclick="Planner.setPlanType('ambos',this)">
+              📦 Ambos
+            </button>
+          </div>
+        </div>
+
+        <div class="planner-option-card">
+          <div class="poc-title">📑 Seções do Plano</div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('overview')">
+            <span>📌 Visão Geral</span>
+            <div class="toggle-sw on" id="tog-overview"></div>
+          </div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('tech')">
+            <span>🏗️ Tecnologias</span>
+            <div class="toggle-sw on" id="tog-tech"></div>
+          </div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('structure')">
+            <span>🗂️ Estrutura</span>
+            <div class="toggle-sw on" id="tog-structure"></div>
+          </div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('deps')">
+            <span>🧩 Dependências</span>
+            <div class="toggle-sw on" id="tog-deps"></div>
+          </div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('routes')">
+            <span>🛣️ Rotas API</span>
+            <div class="toggle-sw on" id="tog-routes"></div>
+          </div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('bugs')">
+            <span>🐛 Problemas</span>
+            <div class="toggle-sw on" id="tog-bugs"></div>
+          </div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('modules')">
+            <span>🧩 Módulos</span>
+            <div class="toggle-sw on" id="tog-modules"></div>
+          </div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('steps')">
+            <span>📝 Passos de Recriação</span>
+            <div class="toggle-sw on" id="tog-steps"></div>
+          </div>
+          <div class="planner-toggle" onclick="Planner.toggleSection('scripts')">
+            <span>⚙️ Scripts de Setup</span>
+            <div class="toggle-sw on" id="tog-scripts"></div>
+          </div>
+        </div>
+
+        <div class="planner-option-card">
+          <div class="poc-title">📤 Exportação</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start;"
+                    onclick="Planner.downloadPart('overview')">
+              ⬇️ Parte 1 — Visão Geral
+            </button>
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start;"
+                    onclick="Planner.downloadPart('tech')">
+              ⬇️ Parte 2 — Tecnologias
+            </button>
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start;"
+                    onclick="Planner.downloadPart('deps')">
+              ⬇️ Parte 3 — Dependências
+            </button>
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start;"
+                    onclick="Planner.downloadPart('routes')">
+              ⬇️ Parte 4 — Rotas
+            </button>
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start;"
+                    onclick="Planner.downloadPart('modules')">
+              ⬇️ Parte 5 — Módulos
+            </button>
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start;"
+                    onclick="Planner.downloadPart('steps')">
+              ⬇️ Parte 6 — Passos
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Área principal do plano -->
+      <div class="planner-main">
+
+        <!-- Progresso de geração -->
+        <div class="gen-progress" id="gen-progress">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <div class="dep-spinner"></div>
+            <span id="gen-progress-text" style="font-size:13px;">Gerando plano...</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="gen-progress-bar"></div>
+          </div>
+        </div>
+
+        <!-- Estado vazio -->
+        <div id="planner-empty" style="text-align:center; padding:80px 20px; color:var(--text-muted);">
+          <div style="font-size:56px; margin-bottom:16px;">📋</div>
+          <div style="font-size:16px; margin-bottom:8px; color:var(--text-secondary);">Nenhum plano gerado ainda</div>
+          <div style="font-size:13px; margin-bottom:24px;">
+            Importe um projeto, analise as dependências e o código,<br>depois clique em "Gerar Plano"
+          </div>
+          <button class="btn btn-primary" onclick="Planner.generate()">
+            ⚡ Gerar Plano Agora
+          </button>
+        </div>
+
+        <!-- Conteúdo do plano -->
+        <div id="planner-content" style="display:none;">
+
+          <!-- Tabs visualização -->
+          <div style="display:flex; gap:4px; margin-bottom:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:4px;">
+            <button class="plan-type-tab active" onclick="Planner.setView('preview',this)">👁️ Preview</button>
+            <button class="plan-type-tab" onclick="Planner.setView('raw',this)">📝 Markdown Raw</button>
+            <button class="plan-type-tab" onclick="Planner.setView('parts',this)">📦 Por Partes</button>
+            <button class="plan-type-tab" onclick="Planner.setView('modular',this)">🧩 Módulos</button>
+          </div>
+
+          <!-- View: Preview -->
+          <div id="view-preview">
+            <div class="md-preview" id="plan-preview-content"></div>
+          </div>
+
+          <!-- View: Raw MD -->
+          <div id="view-raw" style="display:none;">
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <button class="btn btn-secondary" onclick="Planner.copyAll()">📋 Copiar tudo</button>
+              <button class="btn btn-secondary" onclick="Planner.downloadAll()">⬇️ Baixar .md</button>
+            </div>
+            <textarea class="md-editor" id="plan-raw-content" style="min-height:500px;"></textarea>
+          </div>
+
+          <!-- View: Por Partes -->
+          <div id="view-parts" style="display:none;">
+            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
+              Cada parte pode ser copiada ou baixada separadamente — ideal para usar com IA
+            </p>
+            <div id="parts-container"></div>
+          </div>
+
+          <!-- View: Módulos (plano modular) -->
+          <div id="view-modular" style="display:none;">
+            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
+              Cada módulo é independente — pode ser desenvolvido, testado e reutilizado separadamente
+            </p>
+            <div id="modular-container"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-scripts">
+  <div style="max-width:1100px; margin:0 auto;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">⚙️ Gerador de Scripts</h2>
+        <p style="color:var(--text-secondary); font-size:13px;">
+          Scripts BAT (Windows) e SH (Linux/Mac) comentados em PT-BR para recriar o projeto do zero
+        </p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="ScriptGen.generate()">
+          ⚡ Gerar Scripts
+        </button>
+        <button class="btn btn-secondary" onclick="ScriptGen.downloadAll()" id="btn-scripts-dl" style="display:none">
+          ⬇️ Baixar Todos
+        </button>
+      </div>
+    </div>
+
+    <div class="scripts-layout">
+
+      <!-- Sidebar -->
+      <div class="scripts-sidebar">
+
+        <div class="planner-option-card">
+          <div class="poc-title">📦 O que incluir</div>
+          <div class="script-option" onclick="ScriptGen.toggleOpt('folders')">
+            <div class="so-label">
+              <div class="opt-checkbox checked" id="opt-folders">✓</div>
+              <span>📁 Criar pastas</span>
+            </div>
+          </div>
+          <div class="script-option" onclick="ScriptGen.toggleOpt('files')">
+            <div class="so-label">
+              <div class="opt-checkbox checked" id="opt-files">✓</div>
+              <span>📄 Criar arquivos vazios</span>
+            </div>
+          </div>
+          <div class="script-option" onclick="ScriptGen.toggleOpt('npm')">
+            <div class="so-label">
+              <div class="opt-checkbox checked" id="opt-npm">✓</div>
+              <span>📦 npm install</span>
+            </div>
+          </div>
+          <div class="script-option" onclick="ScriptGen.toggleOpt('env')">
+            <div class="so-label">
+              <div class="opt-checkbox checked" id="opt-env">✓</div>
+              <span>🔒 Criar .env</span>
+            </div>
+          </div>
+          <div class="script-option" onclick="ScriptGen.toggleOpt('git')">
+            <div class="so-label">
+              <div class="opt-checkbox checked" id="opt-git">✓</div>
+              <span>🐙 git init</span>
+            </div>
+          </div>
+          <div class="script-option" onclick="ScriptGen.toggleOpt('readme')">
+            <div class="so-label">
+              <div class="opt-checkbox checked" id="opt-readme">✓</div>
+              <span>📝 Criar README.md</span>
+            </div>
+          </div>
+          <div class="script-option" onclick="ScriptGen.toggleOpt('pkgjson')">
+            <div class="so-label">
+              <div class="opt-checkbox checked" id="opt-pkgjson">✓</div>
+              <span>📋 Criar package.json</span>
+            </div>
+          </div>
+          <div class="script-option" onclick="ScriptGen.toggleOpt('gitignore')">
+            <div class="so-label">
+              <div class="opt-checkbox checked" id="opt-gitignore">✓</div>
+              <span>🙈 Criar .gitignore</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="planner-option-card">
+          <div class="poc-title">⚙️ Configurações</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div>
+              <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">
+                Gerenciador de pacotes
+              </label>
+              <select id="pkg-manager" style="width:100%; background:var(--bg-hover); border:1px solid var(--border); border-radius:var(--radius); color:var(--text-primary); padding:6px 8px; font-size:12px; font-family:var(--font-main);">
+                <option value="npm">npm</option>
+                <option value="yarn">yarn</option>
+                <option value="pnpm">pnpm</option>
+                <option value="bun">bun</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">
+                Node.js mínimo
+              </label>
+              <select id="node-version" style="width:100%; background:var(--bg-hover); border:1px solid var(--border); border-radius:var(--radius); color:var(--text-primary); padding:6px 8px; font-size:12px; font-family:var(--font-main);">
+                <option value="18">Node 18 (LTS)</option>
+                <option value="20">Node 20 (LTS)</option>
+                <option value="22">Node 22</option>
+                <option value="16">Node 16</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="planner-option-card">
+          <div class="poc-title">⬇️ Downloads</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start; font-family:var(--font-mono);"
+                    onclick="ScriptGen.downloadBAT()">
+              ⬇️ setup.bat
+            </button>
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start; font-family:var(--font-mono);"
+                    onclick="ScriptGen.downloadSH()">
+              ⬇️ setup.sh
+            </button>
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start; font-family:var(--font-mono);"
+                    onclick="ScriptGen.downloadPS1()">
+              ⬇️ setup.ps1
+            </button>
+            <button class="btn btn-secondary" style="width:100%; justify-content:flex-start; font-family:var(--font-mono);"
+                    onclick="ScriptGen.downloadMakefile()">
+              ⬇️ Makefile
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Área principal -->
+      <div>
+
+        <!-- Estado vazio -->
+        <div id="scripts-empty" style="text-align:center; padding:80px 20px; color:var(--text-muted);">
+          <div style="font-size:56px; margin-bottom:16px;">⚙️</div>
+          <div style="font-size:16px; margin-bottom:8px; color:var(--text-secondary);">Nenhum script gerado ainda</div>
+          <div style="font-size:13px; margin-bottom:24px;">Importe um projeto e clique em "Gerar Scripts"</div>
+          <button class="btn btn-primary" onclick="ScriptGen.generate()">⚡ Gerar Agora</button>
+        </div>
+
+        <!-- Conteúdo dos scripts -->
+        <div id="scripts-content" style="display:none;">
+
+          <!-- Tabs BAT / SH / PS1 / Makefile -->
+          <div class="script-type-tabs">
+            <button class="script-type-tab active" onclick="ScriptGen.setTab('bat',this)">
+              🪟 .BAT
+            </button>
+            <button class="script-type-tab" onclick="ScriptGen.setTab('sh',this)">
+              🐧 .SH
+            </button>
+            <button class="script-type-tab" onclick="ScriptGen.setTab('ps1',this)">
+              💙 .PS1
+            </button>
+            <button class="script-type-tab" onclick="ScriptGen.setTab('makefile',this)">
+              🔧 Makefile
+            </button>
+          </div>
+
+          <!-- BAT -->
+          <div id="script-panel-bat">
+            <div class="script-display-area">
+              <div class="script-display-header">
+                <div class="sdh-title">🪟 setup.bat — Windows</div>
+                <div class="sdh-actions">
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;"
+                          onclick="ScriptGen.copyScript('bat')">📋 Copiar</button>
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;"
+                          onclick="ScriptGen.downloadBAT()">⬇️ Baixar</button>
+                </div>
+              </div>
+              <div class="script-code" id="bat-code"></div>
+              <div class="script-stats" id="bat-stats"></div>
+            </div>
+          </div>
+
+          <!-- SH -->
+          <div id="script-panel-sh" style="display:none;">
+            <div class="script-display-area">
+              <div class="script-display-header">
+                <div class="sdh-title">🐧 setup.sh — Linux / Mac</div>
+                <div class="sdh-actions">
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;"
+                          onclick="ScriptGen.copyScript('sh')">📋 Copiar</button>
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;"
+                          onclick="ScriptGen.downloadSH()">⬇️ Baixar</button>
+                </div>
+              </div>
+              <div class="script-code" id="sh-code"></div>
+              <div class="script-stats" id="sh-stats"></div>
+            </div>
+          </div>
+
+          <!-- PS1 -->
+          <div id="script-panel-ps1" style="display:none;">
+            <div class="script-display-area">
+              <div class="script-display-header">
+                <div class="sdh-title">💙 setup.ps1 — PowerShell</div>
+                <div class="sdh-actions">
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;"
+                          onclick="ScriptGen.copyScript('ps1')">📋 Copiar</button>
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;"
+                          onclick="ScriptGen.downloadPS1()">⬇️ Baixar</button>
+                </div>
+              </div>
+              <div class="script-code" id="ps1-code"></div>
+              <div class="script-stats" id="ps1-stats"></div>
+            </div>
+          </div>
+
+          <!-- Makefile -->
+          <div id="script-panel-makefile" style="display:none;">
+            <div class="script-display-area">
+              <div class="script-display-header">
+                <div class="sdh-title">🔧 Makefile — Universal</div>
+                <div class="sdh-actions">
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;"
+                          onclick="ScriptGen.copyScript('makefile')">📋 Copiar</button>
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;"
+                          onclick="ScriptGen.downloadMakefile()">⬇️ Baixar</button>
+                </div>
+              </div>
+              <div class="script-code" id="makefile-code"></div>
+              <div class="script-stats" id="makefile-stats"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-exporter">
+  <div style="max-width:1100px; margin:0 auto;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">💾 Exportador Universal</h2>
+        <p style="color:var(--text-secondary); font-size:13px;">
+          Exporte tudo — ZIP completo, MDs separados, sessão, pacote para IA
+        </p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="Exporter.exportAll()">
+          📦 Exportar Tudo
+        </button>
+        <button class="btn btn-secondary" onclick="Exporter.exportForAI()">
+          🤖 Pacote para IA
+        </button>
+      </div>
+    </div>
+
+    <!-- Resumo da sessão -->
+    <div class="session-summary" id="session-summary">
+      <div class="session-card">
+        <div class="sc-val" id="exp-files">0</div>
+        <div class="sc-lbl">Arquivos</div>
+      </div>
+      <div class="session-card">
+        <div class="sc-val" id="exp-deps">0</div>
+        <div class="sc-lbl">Dependências</div>
+      </div>
+      <div class="session-card">
+        <div class="sc-val" id="exp-routes">0</div>
+        <div class="sc-lbl">Rotas</div>
+      </div>
+      <div class="session-card">
+        <div class="sc-val" id="exp-bugs">0</div>
+        <div class="sc-lbl">Problemas</div>
+      </div>
+      <div class="session-card">
+        <div class="sc-val" id="exp-size">0KB</div>
+        <div class="sc-lbl">Tamanho total</div>
+      </div>
+      <div class="session-card">
+        <div class="sc-val" id="exp-modules">0</div>
+        <div class="sc-lbl">Módulos</div>
+      </div>
+    </div>
+
+    <!-- Progresso -->
+    <div class="export-progress-wrap" id="export-progress">
+      <div class="export-progress-title">
+        <div class="dep-spinner"></div>
+        <span id="export-progress-text">Preparando exportação...</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="export-progress-bar" style="width:0%"></div>
+      </div>
+      <div id="export-file-list" class="export-file-list" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Cards de exportação -->
+    <div class="exporter-grid">
+
+      <!-- ZIP Completo -->
+      <div class="export-card green">
+        <div class="export-card-icon">📦</div>
+        <div class="export-card-title">ZIP Completo</div>
+        <div class="export-card-desc">
+          Todos os arquivos do projeto + plano + scripts + relatório em um único ZIP
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.zip</span>
+          <span class="export-meta-tag">projeto completo</span>
+          <span class="export-meta-tag">tudo incluso</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportZIP()">
+            ⬇️ Baixar ZIP
+          </button>
+        </div>
+      </div>
+
+      <!-- Plano MD -->
+      <div class="export-card blue">
+        <div class="export-card-icon">📋</div>
+        <div class="export-card-title">Plano Completo</div>
+        <div class="export-card-desc">
+          Plano do projeto em Markdown — visão geral, tecnologias, módulos, passos
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.md</span>
+          <span class="export-meta-tag">markdown</span>
+          <span class="export-meta-tag">plano</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportPlan()">
+            ⬇️ Baixar MD
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.copyPlan()">
+            📋 Copiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Scripts BAT/SH -->
+      <div class="export-card yellow">
+        <div class="export-card-icon">⚙️</div>
+        <div class="export-card-title">Scripts de Setup</div>
+        <div class="export-card-desc">
+          setup.bat + setup.sh + setup.ps1 + Makefile — todos de uma vez
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.bat</span>
+          <span class="export-meta-tag">.sh</span>
+          <span class="export-meta-tag">.ps1</span>
+          <span class="export-meta-tag">Makefile</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportScripts()">
+            ⬇️ Baixar Scripts
+          </button>
+        </div>
+      </div>
+
+      <!-- Relatório de Bugs -->
+      <div class="export-card red">
+        <div class="export-card-icon">🐛</div>
+        <div class="export-card-title">Relatório de Problemas</div>
+        <div class="export-card-desc">
+          Erros, avisos, TODOs e console.logs — lista completa com localização
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.md</span>
+          <span class="export-meta-tag">bugs</span>
+          <span class="export-meta-tag">análise</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportBugs()">
+            ⬇️ Baixar MD
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.copyBugs()">
+            📋 Copiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Dependências -->
+      <div class="export-card purple">
+        <div class="export-card-icon">🧩</div>
+        <div class="export-card-title">Dependências</div>
+        <div class="export-card-desc">
+          Lista completa de dependências com versões, CDN e classificação
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.md</span>
+          <span class="export-meta-tag">.json</span>
+          <span class="export-meta-tag">deps</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportDeps()">
+            ⬇️ MD
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.exportDepsJSON()">
+            ⬇️ JSON
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.copyDeps()">
+            📋
+          </button>
+        </div>
+      </div>
+
+      <!-- Rotas API -->
+      <div class="export-card teal">
+        <div class="export-card-icon">🛣️</div>
+        <div class="export-card-title">Rotas de API</div>
+        <div class="export-card-desc">
+          Todos os endpoints detectados com método, caminho e framework
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.md</span>
+          <span class="export-meta-tag">.json</span>
+          <span class="export-meta-tag">rotas</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportRoutes()">
+            ⬇️ MD
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.exportRoutesJSON()">
+            ⬇️ JSON
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.copyRoutes()">
+            📋
+          </button>
+        </div>
+      </div>
+
+      <!-- Sessão completa -->
+      <div class="export-card blue">
+        <div class="export-card-icon">💿</div>
+        <div class="export-card-title">Sessão Completa</div>
+        <div class="export-card-desc">
+          Salva toda a sessão em JSON — recarregue depois sem precisar reimportar
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.json</span>
+          <span class="export-meta-tag">sessão</span>
+          <span class="export-meta-tag">backup</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportSession()">
+            ⬇️ Salvar Sessão
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.importSession()">
+            📂 Carregar
+          </button>
+        </div>
+      </div>
+
+      <!-- Pacote para IA -->
+      <div class="export-card green">
+        <div class="export-card-icon">🤖</div>
+        <div class="export-card-title">Pacote para IA</div>
+        <div class="export-card-desc">
+          Contexto otimizado para colar em ChatGPT, Claude, Gemini — resumido e estruturado
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.md</span>
+          <span class="export-meta-tag">IA</span>
+          <span class="export-meta-tag">contexto</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportForAI()">
+            🤖 Gerar Contexto
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.copyForAI()">
+            📋 Copiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Estrutura de pastas -->
+      <div class="export-card yellow">
+        <div class="export-card-icon">🗂️</div>
+        <div class="export-card-title">Estrutura de Pastas</div>
+        <div class="export-card-desc">
+          Árvore completa de arquivos e pastas em texto puro
+        </div>
+        <div class="export-card-meta">
+          <span class="export-meta-tag">.md</span>
+          <span class="export-meta-tag">.txt</span>
+          <span class="export-meta-tag">estrutura</span>
+        </div>
+        <div class="export-card-actions">
+          <button class="btn btn-primary" style="flex:1;" onclick="Exporter.exportStructure()">
+            ⬇️ Baixar
+          </button>
+          <button class="btn btn-secondary" onclick="Exporter.copyStructure()">
+            📋 Copiar
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Histórico de exportações -->
+    <div class="card">
+      <div class="card-title">🕐 Histórico de Exportações</div>
+      <div id="export-history">
+        <div style="font-size:13px; color:var(--text-muted); padding:8px 0;">
+          Nenhuma exportação realizada ainda
+        </div>
+      </div>
+    </div>
+
+    <!-- Input oculto para importar sessão -->
+    <input type="file" id="session-file-input" accept=".json"
+           style="display:none" onchange="Exporter.loadSession(event)">
+
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-terminal">
+  <div style="max-width:1200px; margin:0 auto;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+      <div>
+        <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">🧸 Terminal de treino</h2>
+        <p style="color:var(--accent-yellow); font-size:13px; margin:2px 0 6px;">Este só <b>olha</b> o projeto importado (ls, cat, grep, analyze…) e finge o resto. Para rodar de verdade (npm, python, git): <a href="#" onclick="Shell.navigate('termux');return false" style="color:var(--accent-green)">💻 Terminal de verdade</a>.</p>
+        <p style="color:var(--text-secondary); font-size:13px;">
+          Execute comandos, busque pacotes NPM e gerencie o projeto
+        </p>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <div class="env-status" id="env-status">
+          <div class="env-dot offline" id="env-dot"></div>
+          <span id="env-status-text">Ambiente não iniciado</span>
+        </div>
+        <button class="btn btn-primary" id="btn-init-env" onclick="Terminal.init()">
+          ▶️ Iniciar Ambiente
+        </button>
+        <button class="btn btn-secondary" onclick="Terminal.clear()">
+          🗑️ Limpar
+        </button>
+      </div>
+    </div>
+
+    <div class="terminal-layout">
+
+      <!-- Terminal principal -->
+      <div style="display:flex; flex-direction:column; gap:10px;">
+
+        <!-- Janela do terminal -->
+        <div class="terminal-window">
+          <div class="terminal-titlebar">
+            <div class="terminal-dot red"></div>
+            <div class="terminal-dot yellow"></div>
+            <div class="terminal-dot green"></div>
+            <div class="terminal-title" id="terminal-title">
+              ProjetoLens Terminal — aguardando inicialização
+            </div>
+            <div class="terminal-titlebar-actions">
+              <button class="btn btn-secondary" style="padding:2px 8px; font-size:11px;"
+                      onclick="Terminal.copyOutput()">📋</button>
+              <button class="btn btn-secondary" style="padding:2px 8px; font-size:11px;"
+                      onclick="Terminal.saveLog()">💾</button>
+            </div>
+          </div>
+
+          <div class="terminal-output" id="terminal-output">
+            <div class="t-line">
+              <span class="t-info">
+                ╔══════════════════════════════════════════╗<br>
+                &nbsp;║&nbsp;&nbsp; ProjetoLens Terminal v1.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║<br>
+                &nbsp;║&nbsp;&nbsp; Ambiente Node.js no navegador &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║<br>
+                &nbsp;╚══════════════════════════════════════════╝
+              </span>
+            </div>
+            <div class="t-line" style="margin-top:8px;">
+              <span class="t-dim">Clique em "Iniciar Ambiente" para começar</span>
+            </div>
+            <div class="t-line">
+              <span class="t-dim">Digite "help" para ver os comandos disponíveis</span>
+            </div>
+          </div>
+
+          <!-- Barra de input -->
+          <div class="terminal-input-bar">
+            <span class="terminal-input-prompt" id="terminal-prompt">$</span>
+            <input
+              type="text"
+              class="terminal-input"
+              id="terminal-input"
+              placeholder="Digite um comando..."
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              onkeydown="Terminal.handleKey(event)"
+            >
+            <button class="btn btn-primary" style="padding:4px 12px; font-size:12px;"
+                    onclick="Terminal.runInput()">
+              ▶
+            </button>
+          </div>
+        </div>
+
+        <!-- Comandos rápidos -->
+        <div class="card">
+          <div class="card-title">⚡ Comandos Rápidos</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:4px;">
+            <div class="quick-cmd" onclick="Terminal.runCmd('npm run dev')">
+              <span class="qc-icon">🚀</span>
+              <span class="qc-label">Iniciar servidor</span>
+              <span class="qc-code">npm run dev</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('npm install')">
+              <span class="qc-icon">📦</span>
+              <span class="qc-label">Instalar deps</span>
+              <span class="qc-code">npm install</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('npm run build')">
+              <span class="qc-icon">🔨</span>
+              <span class="qc-label">Build</span>
+              <span class="qc-code">npm run build</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('npm test')">
+              <span class="qc-icon">🧪</span>
+              <span class="qc-label">Rodar testes</span>
+              <span class="qc-code">npm test</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('npm run lint')">
+              <span class="qc-icon">🔍</span>
+              <span class="qc-label">Lint</span>
+              <span class="qc-code">npm run lint</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('git status')">
+              <span class="qc-icon">🐙</span>
+              <span class="qc-label">Git status</span>
+              <span class="qc-code">git status</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('git log --oneline -10')">
+              <span class="qc-icon">📜</span>
+              <span class="qc-label">Git log</span>
+              <span class="qc-code">git log</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('ls -la')">
+              <span class="qc-icon">📁</span>
+              <span class="qc-label">Listar arquivos</span>
+              <span class="qc-code">ls -la</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('node --version && npm --version')">
+              <span class="qc-icon">ℹ️</span>
+              <span class="qc-label">Versões</span>
+              <span class="qc-code">node -v</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('npm outdated')">
+              <span class="qc-icon">🔄</span>
+              <span class="qc-label">Deps desatualizadas</span>
+              <span class="qc-code">npm outdated</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('npm audit')">
+              <span class="qc-icon">🔒</span>
+              <span class="qc-label">Auditoria</span>
+              <span class="qc-code">npm audit</span>
+            </div>
+            <div class="quick-cmd" onclick="Terminal.runCmd('cat package.json')">
+              <span class="qc-icon">📋</span>
+              <span class="qc-label">Ver package.json</span>
+              <span class="qc-code">cat pkg</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar -->
+      <div class="terminal-sidebar">
+
+        <!-- Status do ambiente -->
+        <div class="card">
+          <div class="card-title">🖥️ Ambiente</div>
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-muted)">Node.js</span>
+              <span id="env-node-ver" class="version-badge">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-muted)">npm</span>
+              <span id="env-npm-ver" class="version-badge">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-muted)">Projeto</span>
+              <span id="env-project" class="version-badge" style="max-width:120px; overflow:hidden; text-overflow:ellipsis;">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-muted)">Diretório</span>
+              <span id="env-cwd" class="version-badge">~/projeto</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Busca NPM -->
+        <div class="npm-search-box">
+          <div class="npm-search-header">📦 Buscar Pacote NPM</div>
+          <div class="npm-search-input-wrap">
+            <span style="color:var(--text-muted); font-size:14px;">🔍</span>
+            <input
+              type="text"
+              class="npm-search-input"
+              id="npm-search-input"
+              placeholder="ex: express, axios..."
+              onkeydown="if(event.key==='Enter') NpmSearch.search()"
+            >
+            <button class="btn btn-primary" style="padding:3px 10px; font-size:11px;"
+                    onclick="NpmSearch.search()">
+              Buscar
+            </button>
+          </div>
+          <div id="npm-results" style="max-height:400px; overflow-y:auto;">
+            <div style="padding:16px; text-align:center; color:var(--text-muted); font-size:12px;">
+              Digite o nome de um pacote e pressione Enter
+            </div>
+          </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="card">
+          <div class="card-title">🕐 Histórico</div>
+          <div id="cmd-history" style="display:flex; flex-direction:column; gap:2px; max-height:200px; overflow-y:auto;">
+            <div style="font-size:12px; color:var(--text-muted); padding:4px;">Nenhum comando executado</div>
+          </div>
+          <button class="btn btn-secondary" style="width:100%; margin-top:8px; font-size:11px;"
+                  onclick="Terminal.clearHistory()">
+            🗑️ Limpar histórico
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+      <div class="module-panel" id="panel-mapa"></div>
+      <div class="module-panel" id="panel-previa"></div>
+      <div class="module-panel" id="panel-comparar"></div>
+      <div class="module-panel" id="panel-ferramentas"></div>
+      <div class="module-panel" id="panel-termux"></div>
+      <div class="module-panel" id="panel-desmontar"></div>
+
+    </div><!-- fim modules-container -->
+  </main>
+
+</div><!-- fim app -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Modal -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-title">
+      <span id="modal-title-text">Título</span>
+      <button id="modal-close" onclick="Shell.closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Barra de status inferior -->
+<div id="statusbar">
+  <div class="sb-item">🔬 Laboratório</div>
+  <div class="sb-item"><span class="status-dot" id="sb-dot"></span> <span id="sb-project">Nenhum projeto</span></div>
+  <div class="sb-item" id="sb-module">📍 Início</div>
+  <div class="sb-spacer"></div>
+  <div class="sb-item" id="sb-files">📄 0 arquivos</div>
+  <div class="sb-item" id="sb-deps">🧩 0 deps</div>
+  <div class="sb-item" id="sb-bugs">🐛 0 bugs</div>
+  <div class="sb-item" id="sb-time"></div>
+</div>
+<!-- Padding para a statusbar não cobrir conteúdo -->
+<script src="lib/jszip.min.js"></script>
+<script src="lib/pako.min.js"></script>
+<script src="lib/acorn.min.js"></script>
+<script src="js/00-casca.js"></script>
+<script src="js/02-importar.js"></script>
+<script src="js/03-dependencias.js"></script>
+<script src="js/04-analisar.js"></script>
+<script src="js/05a-markdown.js"></script>
+<script src="js/05-plano.js"></script>
+<script src="js/06-scripts.js"></script>
+<script src="js/06b-scripts-fim.js"></script>
+<script src="js/07a-busca-npm.js"></script>
+<script src="js/07-terminal.js"></script>
+<script src="js/08-exportar.js"></script>
+<script src="js/09-integracao.js"></script>
+<script src="js/10-celular.js"></script>
+<script src="js/11-lab-base.js"></script>
+<script src="js/12-lab-mapa.js"></script>
+<script src="js/13-lab-previa.js"></script>
+<script src="js/14-lab-pesquisa.js"></script>
+<script src="js/15a-tar.js"></script>
+<script src="js/15-lab-comparar.js"></script>
+<script src="js/16-lab-ferramentas.js"></script>
+<script src="js/17-lab-termux.js"></script>
+<script src="js/18-lab-desmontar.js"></script>
+<script src="js/19-embutido.js"></script>
+</body>
+</html>
