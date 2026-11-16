@@ -18,9 +18,9 @@
     "electron-builder": "25.1.8"
   },
   "build": {
-    "appId": "com.maikon.laboratorio2.pc.nteste11162324",
-    "productName": "Laboratório 2 (teste 11162324)",
-    "executableName": "Laboratorio2-nteste11162324",
+    "appId": "com.maikon.laboratorio2.pc.nteste11162327",
+    "productName": "Laboratório 2 (teste 11162327)",
+    "executableName": "Laboratorio2-nteste11162327",
     "directories": {
       "output": "release"
     },
@@ -42,13 +42,13 @@
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Laboratório 2 (teste 11162324)",
-      "artifactName": "Laboratorio2-nteste11162324-Instalar.exe",
+      "shortcutName": "Laboratório 2 (teste 11162327)",
+      "artifactName": "Laboratorio2-nteste11162327-Instalar.exe",
       "include": "electron/instalar.nsh"
     },
     "portable": {
-      "artifactName": "Laboratorio2-nteste11162324-sem-instalar.exe"
+      "artifactName": "Laboratorio2-nteste11162327-sem-instalar.exe"
     }
   },
-  "portaDoPrograma": 9825
+  "portaDoPrograma": 9834
 }
