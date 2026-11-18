@@ -1,4 +1,4 @@
-# Gera o Laboratório 2 para PC (.exe). Antes de entregar, o GitHub liga o programa
+# Gera o Mini SK para PC (.exe). Antes de entregar, o GitHub liga o programa
 # e confere se a tela e a ponte respondem. Se falhar, fica VERMELHO.
 name: "Programa .exe para Windows"
 on:
@@ -34,11 +34,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: exe-${{ github.run_number }}
-          name: "Laboratório 2 ${{ github.run_number }}"
+          name: "Mini SK ${{ github.run_number }}"
           files: release/*.exe
       - name: Entregar também em Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Laboratorio-Windows
+          name: Mini-SK-Windows
           path: release/*.exe
           retention-days: 30

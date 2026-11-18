@@ -1,24 +1,17 @@
 {
-  "titulo": "laboratorio2-pc",
+  "titulo": "minisk-pc-20 (6)",
   "arquivo": "index.html",
   "itens": [
     {
-      "path": "app/ferramentas/colador.html",
-      "nome": "Colador de Links",
+      "path": "app/ferramentas/banco-neon.html",
+      "nome": "Banco de Dados (Neon)",
       "desc": "",
       "on": false,
       "icone": ""
     },
     {
-      "path": "app/ferramentas/meu-chat/index.html",
-      "nome": "Meu Chat",
-      "desc": "",
-      "on": false,
-      "icone": "app/ferramentas/meu-chat/icons/icon-192.png"
-    },
-    {
       "path": "app/index.html",
-      "nome": "🔬 Laboratório 2",
+      "nome": "Mini SK",
       "desc": "",
       "on": true,
       "icone": "app/icons/icon.svg"
@@ -32,7 +25,7 @@
     }
   ],
   "sub": "",
-  "logo": "",
+  "logo": "🖥️",
   "tema": "dourado",
   "links": []
 }

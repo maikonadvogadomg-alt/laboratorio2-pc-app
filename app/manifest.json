@@ -1,16 +1,13 @@
 {
-  "name": "🔬 Laboratório 2",
-  "short_name": "🔬 Laboratór",
-  "description": "🔬 Laboratório 2",
-  "id": "./app-laboratorio-2",
+  "id": "./app-mini-sk",
+  "name": "Mini SK",
+  "short_name": "Mini SK",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#00ff00",
-  "theme_color": "#00ff00",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "lang": "pt-BR",
-  "dir": "ltr",
   "icons": [
     {
       "src": "icons/icon-48.png",
@@ -90,5 +87,8 @@
       "type": "image/svg+xml",
       "purpose": "any"
     }
-  ]
+  ],
+  "description": "Mini SK",
+  "orientation": "any",
+  "dir": "ltr"
 }

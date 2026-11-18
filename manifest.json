@@ -1,8 +1,8 @@
 {
-  "name": "laboratorio2-pc",
-  "short_name": "laboratorio2",
-  "description": "laboratorio2-pc",
-  "id": "./app-laboratorio2-pc",
+  "name": "minisk-pc-20 (6)",
+  "short_name": "minisk-pc-20",
+  "description": "minisk-pc-20 (6)",
+  "id": "./app-minisk-pc-20-6",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -93,7 +93,7 @@
   ],
   "shortcuts": [
     {
-      "name": "🔬 Laboratório 2",
+      "name": "Mini SK",
       "url": "app/index.html"
     }
   ]

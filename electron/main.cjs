@@ -41,7 +41,7 @@ let PKG = {}; try { PKG = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 
 const PORTA_APP = Number(PKG.portaDoPrograma) || 7680;
 const NOME_APP = (PKG.build && PKG.build.productName) || 'Mini SK'; // o mesmo programa serve para o Mini SK e para o Laboratório (e outros)
 // 31/10: o terminal e a ponte escolhem uma porta LIVRE sozinhos (a da tela continua fixa: os projetos ficam guardados por endereço)
-let PORTA_TERMINAL = PORTA_APP + 1, PORTA_PONTE = PORTA_APP + 2;
+let PORTA_TERMINAL = PORTA_APP + 1, PORTA_PONTE = PORTA_APP + 2, PORTA_FAXINA = 0, FAXINA_PROC = null;
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.md': 'text/markdown; charset=utf-8', '.wasm': 'application/wasm', '.txt': 'text/plain; charset=utf-8' };
 
 function portaOcupada(p) { return new Promise((ok) => { const s = net.createServer(); s.once('error', () => ok(true)); s.listen(p, '127.0.0.1', () => s.close(() => ok(false))); }); }
@@ -106,7 +106,15 @@ async function ligarTudo() {
   PORTA_TERMINAL = await portaLivre(PORTA_APP + 1, [PORTA_APP, PORTA_PONTE]);
   if (!PORTA_TERMINAL) log('⚠ Nenhuma porta livre para o terminal.');
   else require('./terminal.cjs')({ porta: PORTA_TERMINAL, base: CASA, origem });
-  log('portas: tela ' + PORTA_APP + ' · terminal ' + PORTA_TERMINAL + ' · ponte ' + PORTA_PONTE);
+  // 🧹 13/11-D: a faxina do computador, num processo SEPARADO (se ela demorar olhando o disco, o terminal não trava)
+  PORTA_FAXINA = await portaLivre(PORTA_APP + 5, [PORTA_APP, PORTA_PONTE, PORTA_TERMINAL]);
+  if (PORTA_FAXINA) {
+    try {
+      FAXINA_PROC = require('child_process').fork(path.join(__dirname, 'faxina.cjs'), [], { env: Object.assign({}, process.env, { ELECTRON_RUN_AS_NODE: '1', FAXINA_PORTA: String(PORTA_FAXINA), FAXINA_CODIGO: CODIGO }), stdio: 'ignore', windowsHide: true });
+      FAXINA_PROC.on('exit', (c) => log('faxina saiu (' + c + ')'));
+    } catch (e) { log('faxina: ' + e.message); PORTA_FAXINA = 0; }
+  }
+  log('portas: tela ' + PORTA_APP + ' · terminal ' + PORTA_TERMINAL + ' · ponte ' + PORTA_PONTE + ' · faxina ' + PORTA_FAXINA);
   return origem;
 }
 
@@ -125,6 +133,14 @@ async function ligarOllama() {
   return 'não achei o Ollama instalado';
 }
 ipcMain.handle('ligar-ollama', () => ligarOllama());
+// 🛡️ reabrir como administrador (o Windows pergunta "Sim?"; só quando a pessoa aperta o botão)
+ipcMain.handle('sou-admin', () => { if (process.platform !== 'win32') return true; try { return require('child_process').spawnSync('net', ['session'], { windowsHide: true, timeout: 4000 }).status === 0; } catch { return false; } });
+ipcMain.handle('elevar', () => {
+  if (process.platform !== 'win32') return false;
+  // espera ESTE Mini SK fechar (senão o novo esbarra no "só um aberto") e aí abre de novo como administrador
+  const cmd = 'Wait-Process -Id ' + process.pid + ' -Timeout 20 -ErrorAction SilentlyContinue; Start-Process -FilePath \'' + process.execPath.replace(/'/g, "''") + '\' -Verb RunAs';
+  try { require('child_process').spawn('powershell', ['-NoProfile', '-WindowStyle', 'Hidden', '-Command', cmd], { windowsHide: true, detached: true, stdio: 'ignore' }).unref(); setTimeout(() => app.quit(), 300); return true; } catch (e) { log('elevar: ' + e.message); return false; }
+});
 // 🩺 Saúde do computador: analisar, limpar (só o que volta sozinho), backup dos projetos, fechar programa que segura uma porta
 const SAUDE = require('./saude.cjs');
 ipcMain.handle('pc-analisar', () => SAUDE.analisar(CASA).catch((e) => ({ erro: e.message })));
@@ -219,7 +235,7 @@ function abrirJanela() {
   janela = new BrowserWindow({
     width: g.width || 1360, height: g.height || 900, x: g.x, y: g.y, minWidth: 360, minHeight: 500,
     title: NOME_APP, autoHideMenuBar: true, backgroundColor: '#0f1420', show: false,
-    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, spellcheck: true, additionalArguments: ['--minisk-codigo=' + CODIGO, '--minisk-pasta=' + CASA, '--minisk-portas=' + PORTA_APP + ',' + PORTA_TERMINAL + ',' + PORTA_PONTE] },
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, spellcheck: true, additionalArguments: ['--minisk-codigo=' + CODIGO, '--minisk-pasta=' + CASA, '--minisk-portas=' + PORTA_APP + ',' + PORTA_TERMINAL + ',' + PORTA_PONTE, '--minisk-faxina=' + PORTA_FAXINA] },
   });
   janela.webContents.setWindowOpenHandler(({ url }) => {
     // 🌐 projeto aberto como app: janela própria que também enxerga o terminal e a ponte do PC
@@ -260,5 +276,5 @@ app.on('second-instance', () => {
 app.on('window-all-closed', () => app.quit());
 // ao fechar: para tudo o que o terminal ligou (npm, servidores) — assim nada fica preso e o instalador novo não reclama
 let saindo = false;
-app.on('before-quit', () => { if (saindo) return; saindo = true; try { require('./terminal.cjs').pararTudo(); } catch {} });
+app.on('before-quit', () => { if (saindo) return; saindo = true; try { require('./terminal.cjs').pararTudo(); } catch {} try { FAXINA_PROC && FAXINA_PROC.kill(); } catch {} });
 app.on('will-quit', () => { setTimeout(() => process.exit(0), 3000).unref(); });
